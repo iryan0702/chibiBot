@@ -1,7 +1,7 @@
 //path class
 //this class should be the main manager of all points that would be drawn
 //each instance of Path can have points added to it, drawing mode configured, smudged, smoothed, and drawn given a ctx object
-
+//
 const{Util} = require("./util.js") 
 var util = new Util()
 

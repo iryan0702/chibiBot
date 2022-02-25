@@ -6,7 +6,7 @@ const{Util} = require("./util.js")
 var util = new Util()
 
 class Path{
-    #points = [] //private path variable to store path
+    points = [] //private path variable to store path
 
     constructor(strokeStyle = "#000000", fillStyle="none"){
         this.strokeStyle = strokeStyle
@@ -18,14 +18,14 @@ class Path{
         if(isNaN(x) || isNaN(y)){
             throw "new point must use numeric x and y values!"
         }
-        this.#points.push([x,y])
+        this.points.push([x,y])
     }
 
     addPoint(pointArray){
         if(!Array.isArray(pointArray) || pointArray.length != 2 || isNaN(pointArray[0]) || isNaN(pointArray[1])){
             throw "new point must be a validly formed array! [xValue, yValue]"
         }
-        this.#points.push(pointArray)
+        this.points.push(pointArray)
     }
 
     setStrokeStyle(strokeStyle){
@@ -49,7 +49,7 @@ class Path{
         let magX = smudgeX*dirX
         let magY = smudgeY*dirY
         
-        this.#points.forEach(point => {
+        this.points.forEach(point => {
             let x2 = Math.pow(point[0] - centerX, 2)
             let y2 = Math.pow(point[1] - centerY, 2)
             let rx2 = Math.pow(radiusX, 2)
@@ -75,19 +75,19 @@ class Path{
     
     //introduce random jitter with specified xVar and yVar as max varied distance
     addNoise(xVar, yVar){
-        this.#points.forEach(point => {
+        this.points.forEach(point => {
             util.varyPoint(point, xVar, yVar)
         })
     }
     
     // make each point the average of the current point and next point
     smoothPoints(circularSmooth = false){
-        let prev = this.#points[0]
-        for(let i = 1; i < this.#points.length-1; i++){
-            let tempCur = [this.#points[i][0],this.#points[i][1]]
-            let next = this.#points[i+1]
-            this.#points[i][0] = (prev[0] + tempCur[0] + next[0])/3
-            this.#points[i][1] = (prev[1] + tempCur[1] + next[1])/3
+        let prev = this.points[0]
+        for(let i = 1; i < this.points.length-1; i++){
+            let tempCur = [this.points[i][0],this.points[i][1]]
+            let next = this.points[i+1]
+            this.points[i][0] = (prev[0] + tempCur[0] + next[0])/3
+            this.points[i][1] = (prev[1] + tempCur[1] + next[1])/3
             prev = tempCur
         }
     }
@@ -95,10 +95,10 @@ class Path{
     // basic draw function to draw through all points line by line (can add different types of draw later)
     draw(drawCtx, markPoints=false){
         if(this.fillStyle != "none"){
-            drawCtx.moveTo(this.#points[0][0], this.#points[0][1])
+            drawCtx.moveTo(this.points[0][0], this.points[0][1])
             drawCtx.beginPath()
             drawCtx.fillStyle = this.fillStyle;
-            this.#points.forEach((point) => {
+            this.points.forEach((point) => {
                 drawCtx.lineTo(point[0], point[1])
             });
             drawCtx.closePath()
@@ -107,8 +107,8 @@ class Path{
         }
         
         drawCtx.strokeStyle = this.strokeStyle;
-        let prevPoint = this.#points[0];
-        this.#points.forEach((point) => {
+        let prevPoint = this.points[0];
+        this.points.forEach((point) => {
             drawCtx.beginPath()
             drawCtx.moveTo(prevPoint[0],prevPoint[1])
             drawCtx.lineCap = 'round';
@@ -120,7 +120,7 @@ class Path{
         //debug: mark every point in the path
         if(markPoints){
             let prevStyle = drawCtx.fillStyle
-            this.#points.forEach((point) => {
+            this.points.forEach((point) => {
                 drawCtx.fillStyle = "#FF0000";
                 drawCtx.beginPath();
                 drawCtx.arc(point[0], point[1], 1, 0, 2 * Math.PI, false);

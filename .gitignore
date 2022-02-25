@@ -1,0 +1,5 @@
+ignoreFile
+out.gif
+node_modules
+package-lock.json
+package.json

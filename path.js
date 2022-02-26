@@ -64,7 +64,7 @@ class Path{
     
         if(ctx != null){ //debug: shows the smudge elipse
             let prevFillStyle = ctx.fillStyle
-            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.03)";
             ctx.beginPath();
             ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 360*radian)
             ctx.closePath();

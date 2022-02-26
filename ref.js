@@ -32,7 +32,7 @@ class Ref{
     }
 
     setRandoms(faceSeed){
-        //seed faceShapeRandom
+        //seed faceShapeRandom ytf
         this.util.seed(faceSeed)
 
         //randomness references, other generation function may reference these

@@ -30,17 +30,22 @@ function create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation,
     let ref = new Ref(1000, 1000, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, ctx, seed)
 
     // generate base potato head and draw
-    headPath = gen.generateHeadPath(ref,ctx)
+    headPaths = gen.generateHeadPath(ref,ctx)
+    let headPath = headPaths.headPath
+    let hairlineTopPath = headPaths.hairlineTopPath
+    let hairlineBottomPath = headPaths.hairlineBottomPath
     headPath.addNoise(2,2)
     headPath.smoothPoints()
     headPath.draw(ctx, true)
 
-    widthOffset = ref.width/150 * ref.angleX * -1
-    heightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.5)
-    curvePath = gen.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+widthOffset,ref.HEAD_LEFT[1]+heightOffset], [ref.HEAD_RIGHT[0]+widthOffset,ref.HEAD_RIGHT[1]+heightOffset], ref.HEAD_RIGHT)
-    curvePath.addNoise(2,2)
-    curvePath.smoothPoints()
-    curvePath.draw(ctx, true)
+    hairlineTopPath.addNoise(2,2)
+    hairlineTopPath.smoothPoints()
+    hairlineTopPath.draw(ctx, true)
+
+    hairlineBottomPath.addNoise(2,2)
+    hairlineBottomPath.smoothPoints()
+    hairlineBottomPath.draw(ctx, true)
+
 
     //generate face paths and draw
     facePaths = gen.generateFacePaths(ref,eyes,mouth)

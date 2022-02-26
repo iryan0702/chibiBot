@@ -116,6 +116,14 @@ class Generator{
         let roundedness = util.propC(0.07,0,ref.headRoundedness)
         let headPath = this.generateOval(ref.centerX, ref.centerY, ref.width, ref.height, roundedness, "#222222")//, "#faeacf")
 
+        //generate top hairline
+        let hairlineWidthOffset = ref.width/150 * ref.angleX * -1
+        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.5)
+        let hairlineTopPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT)
+        hairlineHeightOffset += ref.height*0.5
+        let hairlineBottomPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT)
+
+
         //chin smudge params (L): Drag edges of face downwards to form a chin shape
         let centerX = ref.HEAD_LEFT[0]
         let centerY = ref.HEAD_BOTTOM[1]
@@ -123,18 +131,20 @@ class Generator{
         let smudgeHeight = ref.height
         let smudgeX = 0
         let smudgeY = util.prop(0,0.055,ref.chinBulge)
-        headPath.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        
+        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
         //chin smudge params (R)
         centerX = ref.HEAD_RIGHT[0]
-        headPath.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
         //chin smudge params (correct for egregious butt chins that may form from the previous smudges)
         centerX = ref.HEAD_CENTER[0]
         smudgeY *= 0.8
-        headPath.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         //cheek smudge params: Drag the face in its direction to form a cheek bulge
+        //cheek smudge 
         //smudge left
-        centerX = Math.min(ref.centerX-ref.width/7, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
+        centerX = Math.min(ref.centerX-ref.width/6, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
         centerY = ref.HEAD_BOTTOM[1]
         smudgeWidth = ref.width*1.1
         smudgeHeight = ref.height*1.3
@@ -145,19 +155,23 @@ class Generator{
         smudgeX *= dimSmudge
         smudgeY = 0
         console.log("leftSmudge: " + dimSmudge + " , " + smudgeX)
-        headPath.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         //smudge right
-        centerX = Math.max(ref.centerX+ref.width/7, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
+        centerX = Math.max(ref.centerX+ref.width/6, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
         smudgeX = util.prop(0,-0.08,ref.cheekBulge)
         dimSmudge = Math.min(1, Math.abs(ref.angleX/40)+0.75)
         if(ref.angleX > 0) dimSmudge = 0.75
         smudgeX *= dimSmudge*-1
         console.log("rightSmudge: " + dimSmudge + " , " + smudgeX)
-        headPath.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath], centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         // headPath.smudgeArea(ref.centerX-600*Math.sin(ref.angleX*radian), ref.centerY-600*Math.sin(ref.angleY*radian)+100, 225, 250, -0.07*ref.faceAngleDirX, -0.00, ctx)
-        return headPath
+        return {
+            headPath: headPath,
+            hairlineTopPath: hairlineTopPath,
+            hairlineBottomPath: hairlineBottomPath
+        };
     }
 
     // generate face paths: returns a list of paths for the face of a chibi with the specified expressions and Ref
@@ -256,6 +270,14 @@ class Generator{
         }
         
         return facePaths
+    }
+
+    //smudge area of multiple paths
+    //allPaths should be an array of paths
+    smudgeAreas(allPaths, centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx=null){
+        allPaths.forEach(path => {
+            path.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        });
     }
 }
 

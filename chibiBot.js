@@ -77,9 +77,9 @@ function create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation,
 fileNames = []
 
 
-// // random generation: used to check variety and outliers
+// random generation: used to check variety and outliers
 // gifSpeed = 50
-// for(let i = 0; i < 40; i++){
+// for(let i = 0; i < 10; i++){
 //     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
 //     let eyes = util.randInt(8)
 //     let mouth = util.randInt(5)
@@ -103,8 +103,9 @@ fileNames = []
 gifSpeed = 10
 for(let i = 0; i < 20; i++){
     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
-    let eyes = 2
-    let mouth = 3
+    let eyes = 102
+    let mouth = 5
+
     let width = 200
     let height = 180
     let length = 200

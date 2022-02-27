@@ -177,6 +177,8 @@ class Generator{
     // generate face paths: returns a list of paths for the face of a chibi with the specified expressions and Ref
     generateFacePaths(ref,eyeStyle=0,mouthStyle=0){
         let facePaths = []
+        let twentyPercentRNG1 = util.propC(1.2,0.8,ref.eyeRand1)
+        let twentyPercentRNG2 = util.propC(1.2,0.8,ref.eyeRand2)
         //The eye glossary!
         switch(eyeStyle){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
             case 0:{ //Hollow Beanz
@@ -188,42 +190,63 @@ class Generator{
                 facePaths.push(this.generateDotP(ref.rightEye))
                 break
             }case 2:{ //Beeg Beanz
-                facePaths.push(this.generateOvalP(ref.leftEye, ref.height/12*1.3, ref.height/6,0,"#222222", "#ffffff"))
-                facePaths.push(this.generateOvalP(ref.rightEye, ref.height/12, ref.height/6,0,"#222222", "#ffffff"))
+                facePaths.push(this.generateOvalP(ref.leftEye, ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,0,"#222222", "#ffffff"))
+                facePaths.push(this.generateOvalP(ref.rightEye, ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,0,"#222222", "#ffffff"))
                 break
             }case 3:{ //smol Horzantal
-                let lineLen = ref.width/4.6 
+                let lineLen = ref.width/4.6*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 break
             }case 4:{ //beeg horizantal
-                let lineLen = ref.width/2.8
+                let lineLen = ref.width/2.8*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 break
             }case 5:{ //smol vert
-                let lineLen = ref.height/4.6
+                let lineLen = ref.height/4.6*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.leftEye[0],ref.leftEye[1]+lineLen/2,ref.leftEye[0],ref.leftEye[1]-lineLen/2))
                 facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2))
                 break
             }case 6:{ //beeg vert
-                let lineLen = ref.height/2.8
+                let lineLen = ref.height/2.8*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.leftEye[0],ref.leftEye[1]+lineLen/2,ref.leftEye[0],ref.leftEye[1]-lineLen/2))
                 facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2))
                 break
             }case 7:{ //unimpressed double line
-                let lineLen = ref.width/3.5
+                let lineLen = ref.width/3.5*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+12,ref.leftEye[0]-lineLen/2,ref.leftEye[1]+12))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+12,ref.rightEye[0]-lineLen/2,ref.rightEye[1]+12))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]-12,ref.leftEye[0]-lineLen/2,ref.leftEye[1]-12))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]-12,ref.rightEye[0]-lineLen/2,ref.rightEye[1]-12))
                 break
-            }default:{ //YAiY
-                let lineLen = ref.width/3.5
+            }case 8:
+            default:{ //YAiY
+                let lineLen = ref.width/3.5*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]+22))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+22,ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]-22))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]-22,ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
+                break
+            }
+
+            case 100:{ //Plus sign
+                let lineLen = ref.width/2.8*twentyPercentRNG1
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#ffffff"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#ffffff"))
+                break
+            }case 101:{ //Star
+                let lineLen = ref.width*twentyPercentRNG1
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1],ref.height/8*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/4,-0.5,"#222222", "#EEEE44"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1],ref.height/8*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/4,-0.5,"#222222", "#EEEE44"))
+                break
+            }case 102:{ //Advert vision left
+                let lineLen = ref.width/3*twentyPercentRNG1
+                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
+                facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]+lineLen/3,ref.leftEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+lineLen/3,ref.rightEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
                 break
             }
         }
@@ -231,42 +254,94 @@ class Generator{
         //The mouth glossary!
         switch(mouthStyle){
             case 0:{ //Emotionless
-                let mouthWidth = ref.width/3.4
+                let mouthWidth = ref.width/3.4*twentyPercentRNG1
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1],ref.mouth[0]+mouthWidth/2,ref.mouth[1]))
                 break
             }case 1:{ //Angy
-                let mouthWidth = ref.width/4.4
-                let angynessLevel = ref.height/7
+                let mouthWidth = ref.width/4.4*twentyPercentRNG1
+                let angynessLevel = ref.height/7*twentyPercentRNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 break
             }case 2:{ //Angy opn
-                let mouthWidth = ref.width/2.5
-                let angynessLevel = ref.height/4
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/4*twentyPercentRNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2))
                 break
             }case 3:{ //Smle
-                let mouthWidth = ref.width/4.4
-                let angynessLevel = ref.height/7
+                let mouthWidth = ref.width/4.4*twentyPercentRNG1
+                let angynessLevel = ref.height/7*twentyPercentRNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 break
             }case 4:{ //Smle opn
-                let mouthWidth = ref.width/2.5
-                let angynessLevel = ref.height/4
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/4*twentyPercentRNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2))
                 break
             }case 5: //AAAAAAAaaaAAAAAAAaaaaaaAAAAA
             default:{
-                let mouthWidth = ref.height/10
-                let mouthHeight = ref.height/5
-                facePaths.push(this.generateOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight))
+                let mouthWidth = ref.height/10*twentyPercentRNG1
+                let mouthHeight = ref.height/5*twentyPercentRNG2
+                facePaths.push(this.generateOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight,0.00,"#000000","#EEBBBB"))
+                break
+            }case 6:{ //Smle round
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/2.8*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1]-angynessLevel/2,mouthWidth/2,angynessLevel,0,180,0,"#000000","#EEBBBB"))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
+                break
+            }case 7:{ //Sad round
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/2.5*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1]+angynessLevel/2,mouthWidth/2,angynessLevel,180,360,0,"#000000","#EEBBBB"))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2))
+                break
+            }case 8:{ //Very Emotionless
+                let mouthWidth = ref.width/99*twentyPercentRNG1
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1],ref.mouth[0]+mouthWidth/2,ref.mouth[1]))
                 break
             }
+
+
+            case 100:{ //Blep Left
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/5.8*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.mouth[0]-mouthWidth/4,ref.mouth[1]-angynessLevel/2,mouthWidth/4,angynessLevel,0,180,0,"#000000","#EEBBBB"))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
+                break
+            }case 101:{ //Blep Reft
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/5.8*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.mouth[0]+mouthWidth/4,ref.mouth[1]-angynessLevel/2,mouthWidth/4,angynessLevel,0,180,0,"#000000","#EEBBBB"))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
+                break
+            }case 102:{ //Cross
+                let mouthWidth = ref.width/4.5*twentyPercentRNG1
+                let angynessLevel = ref.height/4.5*twentyPercentRNG2
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2))
+                facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2))
+                break
+            }case 103:{ //Granny Face
+                let mouthWidth = ref.width/2.5*twentyPercentRNG1
+                let angynessLevel = ref.height/7*twentyPercentRNG2
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1],ref.mouth[0]+mouthWidth/2,ref.mouth[1]))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2-angynessLevel/4,ref.mouth[1]+angynessLevel/2,ref.mouth[0]-mouthWidth/2+angynessLevel/4,ref.mouth[1]-angynessLevel/2))
+                facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2+angynessLevel/4,ref.mouth[1]+angynessLevel/2,ref.mouth[0]+mouthWidth/2-angynessLevel/4,ref.mouth[1]-angynessLevel/2))
+                break
+            }case 104:{ //Derpy McDroll
+                let mouthWidth = ref.width/4*twentyPercentRNG1
+                let mouthHeight = ref.height/4*twentyPercentRNG2
+                facePaths.push(this.generateOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight,0.00,"#00000000","#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight,80,400,0.00,"#000000","#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+mouthHeight*Math.sqrt(3)/2,mouthWidth/3,mouthHeight/3,-30,150,0.00,"#000000","#EEBBBB"))
+                break
+            }
+            
         }
         
         return facePaths

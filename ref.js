@@ -81,14 +81,14 @@ class Ref{
 
         // face angle adjustments for eyes and mouth
         let xAngleAdjustment = this.angleX*1.2
-        let yAngleAdjustment = this.angleY*3+(this.width/200*33)
+        let yAngleAdjustment = this.angleY*this.height/200*3+(this.width/200*45)
 
         //Compensate for the angle and the dist. betweem eyes
         this.leftEye = [(this.face[0]+this.eyeSeperation*this.width)+xAngleAdjustment, this.face[1]-this.eyeHeight*this.height]
         this.rightEye = [(this.face[0]-this.eyeSeperation*this.width)+xAngleAdjustment,this.face[1]-this.eyeHeight*this.height]
 
         // mouth points
-        this.mouth = [this.face[0],(this.face[1]-this.mouthHeight*this.height)]//+yAngleAdjustment]
+        this.mouth = [this.face[0],(this.face[1]-this.mouthHeight*this.height)+yAngleAdjustment]
     }
 
     DrawRefPoints(){

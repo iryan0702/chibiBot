@@ -73,9 +73,9 @@ function create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation,
 fileNames = []
 
 
-// // random generation: used to check variety and outliers
+// random generation: used to check variety and outliers
 // gifSpeed = 50
-// for(let i = 0; i < 40; i++){
+// for(let i = 0; i < 10; i++){
 //     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
 //     let eyes = util.randInt(8)
 //     let mouth = util.randInt(5)
@@ -90,8 +90,8 @@ fileNames = []
 //     let mouthHeight = util.randRange(-60,-30)/100
 //     let seed = "" + Math.random()    
 //     let fileName = i
-//     fileNames.push(`image${fileName}.png`)
-//     create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+//     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+//     fileNames.push(imageFileName)
 // }
 
 
@@ -99,8 +99,9 @@ fileNames = []
 gifSpeed = 10
 for(let i = 0; i < 20; i++){
     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
-    let eyes = 2
-    let mouth = 3
+    let eyes = 102
+    let mouth = 5
+
     let width = 200
     let height = 180
     let length = 200
@@ -114,23 +115,23 @@ for(let i = 0; i < 20; i++){
     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
     fileNames.push(imageFileName)
 }
-for(let i = 0; i < 20; i++){
-    //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
-    let eyes = 2
-    let mouth = 3
-    let width = 200
-    let height = 180
-    let length = 200
-    let angleX = 20-(i*2)
-    let angleY = -25
-    let eyeSeperation = 0.60
-    let eyeHeight = -0.06
-    let mouthHeight = -0.45
-    let seed = "wow"
-    let fileName = i+20
-    let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
-    fileNames.push(imageFileName)
-}
+// for(let i = 0; i < 20; i++){
+//     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
+//     let eyes = 2
+//     let mouth = 3
+//     let width = 200
+//     let height = 180
+//     let length = 200
+//     let angleX = 20-(i*2)
+//     let angleY = -25
+//     let eyeSeperation = 0.60
+//     let eyeHeight = -0.06
+//     let mouthHeight = -0.45
+//     let seed = "wow"
+//     let fileName = i+20
+//     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+//     fileNames.push(imageFileName)
+// }
 
 
 var Gm = require("gm");

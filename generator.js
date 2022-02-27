@@ -2,6 +2,7 @@
 //This class should be responsible for all the generations of paths, from simple lines/circles, to the complex head shapes and face expressions
 //The inputs to the simple generation should be simple, and inputs for the complex shapes should only require a ref object to determine the major coordinates
 const{Path} = require("./path.js") 
+const ref = require("./ref.js")
 const{Util} = require("./util.js") 
 util = new Util()
 
@@ -117,11 +118,11 @@ class Generator{
         let headPath = this.generateOval(ref.centerX, ref.centerY, ref.width, ref.height, roundedness, "#222222")//, "#faeacf")
 
         //generate top hairline
-        let hairlineWidthOffset = ref.width/150 * ref.angleX * -1
-        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.5)
-        let hairlineTopPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT)
-        hairlineHeightOffset += ref.height*0.5
-        let hairlineBottomPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT)
+        let hairlineWidthOffset = ref.width/120 * ref.angleX * -1
+        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.75) * util.prop(1,1.4,ref.hairlineHeight) // first height = hairline height/forehead size
+        let hairlineTopPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022")
+        hairlineHeightOffset += ref.height*(util.prop(0.6,0.9,ref.hairLength)) // adjust height = hair length
+        let hairlineBottomPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022")
 
 
         //chin smudge params (L): Drag edges of face downwards to form a chin shape
@@ -142,9 +143,10 @@ class Generator{
         this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         //cheek smudge params: Drag the face in its direction to form a cheek bulge
-        //cheek smudge 
+        //cheek smudge is composed of a left smudge and right smudge, with a rightmost limit and leftmost limit respectively
         //smudge left
-        centerX = Math.min(ref.centerX-ref.width/6, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
+        let centerThreshold = util.prop(0.3,0.125,(ref.angleY+25)/25) //the limit changes depending on the y angle of the face
+        centerX = Math.min(ref.centerX-ref.width*centerThreshold, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
         centerY = ref.HEAD_BOTTOM[1]
         smudgeWidth = ref.width*1.1
         smudgeHeight = ref.height*1.3
@@ -158,7 +160,7 @@ class Generator{
         this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         //smudge right
-        centerX = Math.max(ref.centerX+ref.width/6, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
+        centerX = Math.max(ref.centerX+ref.width*centerThreshold, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
         smudgeX = util.prop(0,-0.08,ref.cheekBulge)
         dimSmudge = Math.min(1, Math.abs(ref.angleX/40)+0.75)
         if(ref.angleX > 0) dimSmudge = 0.75
@@ -172,6 +174,44 @@ class Generator{
             hairlineTopPath: hairlineTopPath,
             hairlineBottomPath: hairlineBottomPath
         };
+    }
+
+    //generate hair bangs by taking random segments from the top hairline and bottom hairline
+    generateHairBangs(ref, topHairline, bottomHairline, ctx=null){
+        let bangLine = new Path("#000000")
+        let totalLengthTraversed = 0
+        let totalTopPoints = topHairline.points.length
+        let totalBottomPoints = bottomHairline.points.length
+        let prevPoint = null
+        for(let i = 0; i < 3; i++){ //top hairline must be broken by an even amount of points
+            let convertRange = util.propC(0,1,ref.hairSegments[i]) //rarify very short and long segments
+            let p1 = Math.floor(totalTopPoints * convertRange**3)
+            convertRange = util.propC(0,1,ref.hairSegments[i+1])
+            let p2 = Math.floor(totalTopPoints * convertRange**3)
+            console.log("total: " + totalTopPoints + " p1: " + p1 + " p2: " + p2)
+            if(totalLengthTraversed + p1 + p2 > totalTopPoints){
+                break
+            }
+
+            for(let j = totalLengthTraversed; j < totalLengthTraversed + p1; j++){
+                console.log("adding " + topHairline.points[j] + " max " + totalTopPoints + " cur " + j)
+                bangLine.addPoint(topHairline.points[j])
+                prevPoint = topHairline.points[j]
+            }
+
+            let pointRatio = (totalLengthTraversed+p1+p2)/totalTopPoints
+            let nextBottomPoint = Math.floor(pointRatio*totalBottomPoints)
+            console.log("adding anchor " + bottomHairline.points[nextBottomPoint])
+            
+            let lineToCenter = this.generateLineP(prevPoint, bottomHairline.points[nextBottomPoint])
+            bangLine.addPath(lineToCenter)
+            prevPoint = bottomHairline.points[nextBottomPoint]
+
+            totalLengthTraversed += p1 + p2
+        }
+        let lineToEnd = this.generateLineP(prevPoint, topHairline.points[totalTopPoints-1])
+        bangLine.addPath(lineToEnd)
+        return bangLine
     }
 
     // generate face paths: returns a list of paths for the face of a chibi with the specified expressions and Ref

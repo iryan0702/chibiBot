@@ -46,6 +46,10 @@ function create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation,
     hairlineBottomPath.smoothPoints()
     hairlineBottomPath.draw(ctx, true)
 
+    let bangPath = gen.generateHairBangs(ref, hairlineTopPath, hairlineBottomPath)
+    bangPath.addNoise(2,2)
+    bangPath.smoothPoints()
+    bangPath.draw(ctx, true)
 
     //generate face paths and draw
     facePaths = gen.generateFacePaths(ref,eyes,mouth)
@@ -110,28 +114,28 @@ for(let i = 0; i < 20; i++){
     let eyeSeperation = 0.60
     let eyeHeight = -0.06
     let mouthHeight = -0.45
-    let seed = "wow"
+    let seed = "nft"
     let fileName = i
     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
     fileNames.push(imageFileName)
 }
-// for(let i = 0; i < 20; i++){
-//     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
-//     let eyes = 2
-//     let mouth = 3
-//     let width = 200
-//     let height = 180
-//     let length = 200
-//     let angleX = 20-(i*2)
-//     let angleY = -25
-//     let eyeSeperation = 0.60
-//     let eyeHeight = -0.06
-//     let mouthHeight = -0.45
-//     let seed = "wow"
-//     let fileName = i+20
-//     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
-//     fileNames.push(imageFileName)
-// }
+for(let i = 0; i < 20; i++){
+    //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
+    let eyes = 2
+    let mouth = 3
+    let width = 200
+    let height = 180
+    let length = 200
+    let angleX = 20-(i*2)
+    let angleY = -25
+    let eyeSeperation = 0.60
+    let eyeHeight = -0.06
+    let mouthHeight = -0.45
+    let seed = "nft"
+    let fileName = i+20
+    let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+    fileNames.push(imageFileName)
+}
 
 
 var Gm = require("gm");

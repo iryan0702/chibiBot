@@ -28,6 +28,19 @@ class Path{
         this.points.push(pointArray)
     }
 
+    //add all the points of a different path to this one (not thouroughly tested btw)
+    addPath(path){
+        path.points.forEach(point => {
+            this.points.push(point)
+        });
+    }
+
+    addPathBefore(path){
+        path.points.reverse().forEach(point => {
+            this.points.unshift(point)
+        });
+    }
+
     setStrokeStyle(strokeStyle){
         this.strokeStyle = strokeStyle
     }

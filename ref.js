@@ -46,6 +46,11 @@ class Ref{
         this.mouthRand3 = this.util.seededRand()
         this.mouthRand4 = this.util.seededRand()
 
+        this.hairlineHeight = this.util.seededRand()
+        this.hairLength = this.util.seededRand()
+
+        this.hairSegments = [this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand()]
+
         this.faceVX = this.util.seededRand() //for shifting the face very slightly randomly
         this.faceVY = this.util.seededRand()
 
@@ -82,6 +87,7 @@ class Ref{
         // face angle adjustments for eyes and mouth
         let xAngleAdjustment = this.angleX*1.2
         let yAngleAdjustment = this.angleY*this.height/200*1.1+(this.width/200*15)
+
 
         //Compensate for the angle and the dist. betweem eyes
         this.leftEye = [(this.face[0]+this.eyeSeperation*this.width)+xAngleAdjustment, this.face[1]-this.eyeHeight*this.height]

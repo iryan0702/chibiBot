@@ -99,8 +99,8 @@ fileNames = []
 gifSpeed = 10
 for(let i = 0; i < 20; i++){
     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
-    let eyes = 102
-    let mouth = 5
+    let eyes = 106
+    let mouth = 7
 
     let width = 200
     let height = 180

@@ -64,21 +64,37 @@ class Generator{
         return facePath
     }
 
-    //generate an oval with start and end angles
-    generatePartialOval(centerX, centerY, radiusX, radiusY, angle1, angle2, protrusion=0, strokeStyle="#000000", fillStyle="none"){
+    generateOvalWonky(centerX, centerY, radiusX, radiusY, protrusion=0, strokeStyle="#000000", fillStyle="none"){
         let facePath = new Path(strokeStyle, fillStyle)
-        let numPoints = ((radiusX+radiusY)*3.1415)/10+4 //num points for a full circle
-        numPoints = Math.max(3, Math.floor(numPoints * (angle2-angle1)/360)) //num points for the specified arc
-        let degreePerStep = (angle2-angle1)/(numPoints-1)
-        let dg = (numPoints-1)/8 //number of points before each diagonal is reached
+        let numPoints = ((radiusX+radiusY)*3.1415)/10+4
+        let degreePerStep = 360/(numPoints-1)
+        let dg = (numPoints-1)/14 
         for(let i = 0; i < numPoints; i++){
             let protrude = 1 + protrusion * (Math.abs((i+dg)%(dg*2) - dg)/dg)
-            let degree = (i*degreePerStep + angle1)*radian
+            let degree = i*radian*degreePerStep
             facePath.addPoint([centerX + Math.cos(degree)*radiusX*protrude, centerY + Math.sin(degree)*radiusY*protrude])
         }
         
         return facePath
     }
+
+    generatePartialOval(centerX, centerY, radiusX, radiusY, angle1, angle2, protrusion=0, strokeStyle="#000000", fillStyle="none"){
+            let facePath = new Path(strokeStyle, fillStyle)
+            let numPoints = ((radiusX+radiusY)*3.1415)/10+4 //num points for a full circle
+            numPoints = Math.max(3, Math.floor(numPoints * (angle2-angle1)/360)) //num points for the specified arc
+            let degreePerStep = (angle2-angle1)/(numPoints-1)
+            let dg = (numPoints-1)/8 //number of points before each diagonal is reached
+            for(let i = 0; i < numPoints; i++){
+                let protrude = 1 + protrusion * (Math.abs((i+dg)%(dg*2) - dg)/dg)
+                let degree = (i*degreePerStep + angle1)*radian
+                facePath.addPoint([centerX + Math.cos(degree)*radiusX*protrude, centerY + Math.sin(degree)*radiusY*protrude])
+            }
+            
+            return facePath
+        }
+
+    //generate an oval with start and end angles
+
 
     //generate a bezier curve based on 4 points
     //calculation method from https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/de-casteljau.html#:~:text=Following%20the%20construction%20of%20a,and%20finally%20add%20them%20together.
@@ -228,6 +244,22 @@ class Generator{
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]-22))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]-22,ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 break
+            }case 9:{ //unimpressed stare
+                let lineLen = ref.width/3*twentyPercentRNG1
+                let eyeVert = ref.height/4.1*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1],lineLen/2.5,eyeVert/1.5,0,180,0.2,"#000000", "#666666"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1],lineLen/2.5,eyeVert/1.5,0,180,0.2,"#000000", "#666666"))
+                facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+0,ref.leftEye[0]-lineLen/2,ref.leftEye[1]+0))
+                facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+0,ref.rightEye[0]-lineLen/2,ref.rightEye[1]+0))
+                break
+            }case 10:{ //holding in a laugh
+                let lineLen = ref.width/3.5*twentyPercentRNG1
+                let eyeVert = ref.height/4.1*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+12,lineLen/2,eyeVert/1.1,180,360,0.2,"#000000", "#FFFFFF"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+12,lineLen/2,eyeVert/1.1,180,360,0.2,"#000000", "#FFFFFF"))
+                facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+12,ref.leftEye[0]-lineLen/2,ref.leftEye[1]+12))
+                facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+12,ref.rightEye[0]-lineLen/2,ref.rightEye[1]+12))
+                break
             }
 
             case 100:{ //Plus sign
@@ -247,6 +279,38 @@ class Generator{
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 facePaths.push(this.generatePartialOval(ref.leftEye[0]+lineLen/3,ref.leftEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0]+lineLen/3,ref.rightEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
+                break
+            }case 103:{ //Advert vision right
+                let lineLen = ref.width/3*twentyPercentRNG1
+                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
+                facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-lineLen/3,ref.leftEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]-lineLen/3,ref.rightEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
+                break
+            }case 104:{ //Angy Boll
+                let lineLen = ref.width/3.8*twentyPercentRNG1
+                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1],lineLen/2,eyeVert/1.1,-60,150,0.2,"#000000", "#BB5555"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1],lineLen/2,eyeVert/1.1,30,240,0.2,"#000000", "#BB5555"))
+                facePaths.push(this.generateLine(ref.leftEye[0]-lineLen/2,ref.leftEye[1]+0.2*eyeVert,ref.leftEye[0],ref.leftEye[1]-0.8*eyeVert))
+                facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+0.2*eyeVert,ref.rightEye[0],ref.rightEye[1]-0.8*eyeVert))
+                break
+            }case 105:{ //hearts
+                let lineLen = ref.width/3*twentyPercentRNG1
+                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.8,eyeVert/0.9,-30,210,-0.2,"#00000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+eyeVert/3.5,lineLen/1.8,eyeVert/0.9,-30,210,-0.2,"#00000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,0,180,-0.2,"#000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,0,180,-0.2,"#000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]+lineLen/3.5,ref.leftEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,210,360,0.2,"#000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+lineLen/3.5,ref.rightEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,210,360,0.2,"#000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-lineLen/3.5,ref.leftEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,180,330,0.2,"#000000", "#EEBBBB"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]-lineLen/3.5,ref.rightEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,180,330,0.2,"#000000", "#EEBBBB"))
+                break
+            }case 106:{ //Bouta Cry
+                facePaths.push(this.generateOvalWonky(ref.leftEye[0],ref.leftEye[1], ref.height/4, ref.height/4,-0.44,"#222222", "#BBCCFF"))
+                facePaths.push(this.generateOvalWonky(ref.rightEye[0],ref.rightEye[1], ref.height/4, ref.height/4,-0.44,"#222222", "#BBCCFF"))
                 break
             }
         }

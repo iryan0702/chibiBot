@@ -1,6 +1,7 @@
 //generator class:
 //This class should be responsible for all the generations of paths, from simple lines/circles, to the complex head shapes and face expressions
 //The inputs to the simple generation should be simple, and inputs for the complex shapes should only require a ref object to determine the major coordinates
+const path = require("./path.js")
 const{Path} = require("./path.js") 
 const ref = require("./ref.js")
 const{Util} = require("./util.js") 
@@ -167,16 +168,8 @@ class Generator{
         let roundedness = util.propC(0.07,0,ref.headRoundedness)
         let headPath = this.generateOval(ref.centerX, ref.centerY, ref.width, ref.height, roundedness, "#222222")//, "#faeacf")
 
-        //generate top hairline
-        let hairlineWidthOffset = ref.width/120 * ref.angleX * -1
-        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.75) * util.prop(1,1.4,ref.hairlineHeight) // first height = hairline height/forehead size
-        let hairlinePointCount = Math.floor(ref.width/200*40 + ref.height/200*10)
-        let hairlineBias = util.prop(0,1,(ref.angleX+20)/40) //The term "bias" is used for weighings that account for head rotation in the hairline bezier curve
-        hairlineBias = Math.min(1,Math.max(0,hairlineBias))
-        let hairlineTopPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022", hairlinePointCount, hairlineBias)
-        hairlineHeightOffset += ref.height*(util.prop(0.6,0.9,ref.hairLength)) // adjust height = hair length
-        let hairlineBottomPath = this.generate4PointBezier(ref.HEAD_LEFT, [ref.HEAD_LEFT[0]+hairlineWidthOffset,ref.HEAD_LEFT[1]+hairlineHeightOffset], [ref.HEAD_RIGHT[0]+hairlineWidthOffset,ref.HEAD_RIGHT[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022", hairlinePointCount, hairlineBias)
-
+        //generate a line to keep track of left and right head reference points
+        let headLRRef = this.generateLineP(ref.HEAD_LEFT, ref.HEAD_RIGHT)
 
         //chin smudge params (L): Drag edges of face downwards to form a chin shape
         let centerX = ref.HEAD_LEFT[0]
@@ -186,14 +179,15 @@ class Generator{
         let smudgeX = 0
         let smudgeY = util.prop(0,0.055,ref.chinBulge)
         
-        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        
+        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
         //chin smudge params (R)
         centerX = ref.HEAD_RIGHT[0]
-        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
         //chin smudge params (correct for egregious butt chins that may form from the previous smudges)
         centerX = ref.HEAD_CENTER[0]
         smudgeY *= 0.8
-        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         //cheek smudge params: Drag the face in its direction to form a cheek bulge
         //cheek smudge is composed of a left smudge and right smudge, with a rightmost limit and leftmost limit respectively
@@ -215,7 +209,7 @@ class Generator{
         smudgeX *= dimSmudge
         smudgeY = 0
         // console.log("leftSmudge: " + dimSmudge + " , " + smudgeX)
-        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
         //smudge right
         centerX = Math.max(ref.centerX+ref.width*centerThreshold, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
@@ -224,18 +218,29 @@ class Generator{
         if(ref.angleX > 0) dimSmudge = 0.75
         smudgeX *= dimSmudge*-1
         // console.log("rightSmudge: " + dimSmudge + " , " + smudgeX)
-        this.smudgeAreas([headPath, hairlineTopPath, hairlineBottomPath], centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, headLRRef], centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
 
-        // headPath.smudgeArea(ref.centerX-600*Math.sin(ref.angleX*radian), ref.centerY-600*Math.sin(ref.angleY*radian)+100, 225, 250, -0.07*ref.faceAngleDirX, -0.00, ctx)
         return {
             headPath: headPath,
-            hairlineTopPath: hairlineTopPath,
-            hairlineBottomPath: hairlineBottomPath
+            headLRRef: headLRRef
         };
     }
 
     //generate hair bangs by taking random segments from the top hairline and bottom hairline
-    generateHairBangs(ref, topHairline, bottomHairline, ctx=null){
+    generateHairBangs(ref, headLeftPoint, headRightPoint, ctx=null){
+        //generate hairlines
+        let hairlineWidthOffset = ref.width/120 * ref.angleX * -1
+        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.75) * util.prop(1,1.4,ref.hairlineHeight) // first height = hairline height/forehead size
+        let hairlinePointCount = Math.floor(ref.width/200*40 + ref.height/200*10)
+        let hairlineBias = util.prop(0.1,0.9,(ref.angleX+20)/40) //The term "bias" is used for weighings that account for head rotation in the hairline bezier curve
+        hairlineBias = Math.min(1,Math.max(0,hairlineBias))
+        let topHairline = this.generate4PointBezier(headLeftPoint, [headLeftPoint[0]+hairlineWidthOffset,headLeftPoint[1]+hairlineHeightOffset], [headRightPoint[0]+hairlineWidthOffset,headRightPoint[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022", hairlinePointCount, hairlineBias)
+        hairlineHeightOffset += ref.height*(util.prop(0.6,0.9,ref.hairLength)) // adjust height = hair length
+        let bottomHairline = this.generate4PointBezier(headLeftPoint, [headLeftPoint[0]+hairlineWidthOffset,headLeftPoint[1]+hairlineHeightOffset], [headRightPoint[0]+hairlineWidthOffset,headRightPoint[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022", hairlinePointCount, hairlineBias)
+
+        topHairline.draw(ctx, true)
+        bottomHairline.draw(ctx, true)
+
         let bangLine = new Path("#000000")
         let totalLengthTraversed = 0
         let totalTopPoints = topHairline.points.length

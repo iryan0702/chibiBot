@@ -69,6 +69,8 @@ function create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation,
     fileName = `./generatedImages/image${fileName}.png`
     fs.writeFileSync(fileName, buffer);
 
+    console.log("created " + fileName)
+
     return fileName
 }
 
@@ -79,7 +81,7 @@ fileNames = []
 
 // random generation: used to check variety and outliers
 // gifSpeed = 50
-// for(let i = 0; i < 10; i++){
+// for(let i = 0; i < 40; i++){
 //     //eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight,fileName
 //     let eyes = util.randInt(8)
 //     let mouth = util.randInt(5)
@@ -114,7 +116,7 @@ for(let i = 0; i < 20; i++){
     let eyeSeperation = 0.60
     let eyeHeight = -0.06
     let mouthHeight = -0.45
-    let seed = "nft"
+    let seed = "wow"
     let fileName = i
     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
     fileNames.push(imageFileName)
@@ -131,7 +133,7 @@ for(let i = 0; i < 20; i++){
     let eyeSeperation = 0.60
     let eyeHeight = -0.06
     let mouthHeight = -0.45
-    let seed = "nft"
+    let seed = "wow"
     let fileName = i+20
     let imageFileName = create(eyes,mouth,width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
     fileNames.push(imageFileName)

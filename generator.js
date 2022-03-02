@@ -19,8 +19,8 @@ class Generator{
         return this.generateLine(point1[0], point1[1], point2[0], point2[1])
     }
 
-    generateLine(x1,y1,x2,y2){
-        let facePath = new Path()
+    generateLine(x1,y1,x2,y2, strokeStyle="#000000"){
+        let facePath = new Path(strokeStyle, "none")
         let linePointCount = Math.floor(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/10)+2 //15=segmet length
     
         for(let i=0; i<linePointCount;i++){
@@ -307,14 +307,17 @@ class Generator{
                 break
             }case 1:{ //Im gonna kill you
                 let expressionWidth = ref.width
-                let expressionHeight = ref.height/1.9
-                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY,expressionWidth,expressionHeight,0,360,0.22,"#00000000","#222222BB"))
+                let expressionHeight = ref.height/1.77
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/15,expressionWidth,expressionHeight,0,360,0.22,"#00000000","#222222BB"))
+                break
+            }case 2:{//eyebags
+                let expressionWidth = ref.width/7.5*RNG3
+                let expressionHeight = ref.height/14.5*RNG4
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1]+expressionHeight/0.47,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1]+expressionHeight/0.47,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
                 break
             }
         }
-
-
-
 
 
         //eyebrows (Begins from 200)
@@ -373,8 +376,36 @@ class Generator{
                 facePaths.push(this.generate4PointBezier([ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel/2],[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel] ,[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel] , [ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel/2]))
                 break
             }
+        }
+
+        //Facepaint/signature accessory (Begins from 300)
+        let facepaint= -1
+        for (let i=0; i<accessories.length; i++){
+            if (accessories[i]-300 >=0 && accessories[i]-300 <=99){
+                facepaint = accessories[i]-300
+                break
+            }
             
         }
+        switch(facepaint){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case -1: //No 
+            default:{
+                break
+            }case 0:{//Rambo war paint
+                let expressionWidth = ref.width/7.5*RNG3
+                let expressionHeight = ref.height/22.5*RNG4
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1]+expressionHeight/0.15,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1]+expressionHeight/0.15,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1]+expressionHeight/0.1,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1]+expressionHeight/0.1,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                break
+            }case 1:{//Eye Scar
+                let lineLen = ref.height/2.8*RNG1
+                facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2),"#660000")
+                break
+            }
+        }
+            
 
         RNG1 = util.propC(1.2,0.8,ref.eyeRand1)
         RNG2 = util.propC(1.2,0.8,ref.eyeRand2)
@@ -411,7 +442,7 @@ class Generator{
                 facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2))
                 break
             }case 6:{ //beeg vert
-                let lineLen = ref.height/2.8*RNG1
+                let lineLen = ref.height/3*RNG1
                 facePaths.push(this.generateLine(ref.leftEye[0],ref.leftEye[1]+lineLen/2,ref.leftEye[0],ref.leftEye[1]-lineLen/2))
                 facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2))
                 break

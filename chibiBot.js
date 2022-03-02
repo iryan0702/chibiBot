@@ -228,9 +228,9 @@ fileNames = []
 
     let centerX = 1000
     let centerY = 1000
-    let eyes = 5
+    let eyes = 4
     let mouth = 9
-    let accessories = [101,201]
+    let accessories = [101,201,301]
     let width = 220
     let height = 200
     let length = 220

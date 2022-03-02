@@ -401,6 +401,9 @@ class Generator{
                 break
             }
         }
+
+        twentyPercentRNG1 = util.propC(1.2,0.8,ref.mouthRand1)
+        twentyPercentRNG2 = util.propC(1.2,0.8,ref.mouthRand2)
     
         //The mouth glossary!
         switch(mouthStyle){

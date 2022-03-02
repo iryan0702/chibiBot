@@ -46,6 +46,11 @@ class Ref{
         this.mouthRand3 = this.util.seededRand()
         this.mouthRand4 = this.util.seededRand()
 
+        this.accRand1 = this.util.seededRand()
+        this.accRand2 = this.util.seededRand()
+        this.accRand3 = this.util.seededRand()
+        this.accRand4 = this.util.seededRand()
+
         this.hairlineHeight = this.util.seededRand()
         this.hairLength = this.util.seededRand()
 

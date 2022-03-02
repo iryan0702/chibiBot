@@ -13,11 +13,11 @@ const gen = new Generator()
 const util = new Util()
 
 //combined main function to create and output a chibi image based on the inputs
-function create(eyes, mouth, brows, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName){
-    createXY(canvasWidth/2, canvasHeight/2, eyes, mouth, brows, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+function create(eyes, mouth, accessories, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName){
+    createXY(canvasWidth/2, canvasHeight/2, eyes, mouth, accessories, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
 }
 
-function createXY(centerX, centerY, eyes, mouth, brows, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName){
+function createXY(centerX, centerY, eyes, mouth, accessories, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName){
     //create
     canvas = createCanvas(canvasWidth, canvasHeight);
     ctx = canvas.getContext("2d");
@@ -53,7 +53,7 @@ function createXY(centerX, centerY, eyes, mouth, brows, width, height, length, a
     bangPath.draw(ctx, true)
 
     //generate face paths and draw
-    facePaths = gen.generateFacePaths(ref,eyes,mouth,brows)
+    facePaths = gen.generateFacePaths(ref,eyes,mouth,accessories)
     facePaths.forEach(path =>{
         path.addNoise(2,2)
         path.smoothPoints()
@@ -180,7 +180,6 @@ fileNames = []
 //     let centerY = 1850-(relY*1500)
 //     let eyes = 2
 //     let mouth = 7
-//     let brows = 101
 //     if(squishFrames > 0){
 //         squishFrames -= 1
 //         eyes = 8
@@ -196,7 +195,7 @@ fileNames = []
 //     let mouthHeight = -0.45
 //     let seed = "wow"
 //     let fileName = nextFileName
-//     let imageFileName = createXY(centerX, centerY, eyes, mouth, brows, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+//     let imageFileName = createXY(centerX, centerY, eyes, mouth, accessories, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
 //     fileNames.push(imageFileName)
 //     nextFileName += 1
 // }
@@ -207,7 +206,6 @@ fileNames = []
 //     let centerY = util.prop(1800, 1000, rel)
 //     let eyes = 101
 //     let mouth = 5
-//     let brows = 101
 //     let width = util.prop(220, 880, rel)
 //     let height = util.prop(200, 800, rel)
 //     let length = util.prop(220, 880, rel)
@@ -218,7 +216,7 @@ fileNames = []
 //     let mouthHeight = -0.45
 //     let seed = "wow"
 //     let fileName = nextFileName
-//     let imageFileName = createXY(centerX, centerY, eyes, mouth, brows, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+//     let imageFileName = createXY(centerX, centerY, eyes, mouth, accessories, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
 //     fileNames.push(imageFileName)
 //     nextFileName += 1
 //     }
@@ -230,9 +228,9 @@ fileNames = []
 
     let centerX = 1000
     let centerY = 1000
-    let eyes = 2
-    let mouth = 5
-    let brows = 104
+    let eyes = 5
+    let mouth = 9
+    let accessories = [101,201]
     let width = 220
     let height = 200
     let length = 220
@@ -241,10 +239,10 @@ fileNames = []
     let eyeSeperation = 0.60
     let eyeHeight = -0.06
     let mouthHeight = -0.45
-    let seed = "wow"
+    let seed = "yeet"
     let fileName = "nextFileName"
 
-    createXY(centerX, centerY, eyes, mouth, brows, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
+    createXY(centerX, centerY, eyes, mouth, accessories, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, seed, fileName)
 
 
 

@@ -278,10 +278,47 @@ class Generator{
     }
 
     // generate face paths: returns a list of paths for the face of a chibi with the specified expressions and Ref
-    generateFacePaths(ref,eyeStyle=0,mouthStyle=0){
+    generateFacePaths(ref,eyeStyle=0,mouthStyle=0,browStyle=0){
         let facePaths = []
         let twentyPercentRNG1 = util.propC(1.2,0.8,ref.eyeRand1)
         let twentyPercentRNG2 = util.propC(1.2,0.8,ref.eyeRand2)
+        let twentyPercentRNG3 = util.propC(1.2,0.8,ref.eyeRand3)
+
+        //The eyebrows
+        switch(browStyle){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case 0: //No eyebrow
+            default:{
+                break
+            }
+
+            case 101:{ //Sadd
+                let lineLen = ref.width/3.5*twentyPercentRNG3
+                let expressionLevel = ref.height/9.5
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1],ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel,ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]))
+                break
+            }case 102:{ //Angy
+                let lineLen = ref.width/3.5*twentyPercentRNG3
+                let expressionLevel = ref.height/9.5
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel,ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1],ref.leftBrow[0]-lineLen/2,ref.leftBrow[1])+expressionLevels)
+                break
+            }case 103:{ //Seriously?
+                let lineLen = ref.width/3.5*twentyPercentRNG3
+                let expressionLevel = ref.height/20
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel,ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel,ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel))
+                break
+            }case 104:{ //Suprised
+                let lineLen = ref.width/3.5*twentyPercentRNG3
+                let expressionLevel = -(ref.height/20)
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel,ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel,ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel))
+                break
+            }
+            
+        }
+
         //The eye glossary!
         switch(eyeStyle){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
             case 0:{ //Hollow Beanz

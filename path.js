@@ -69,9 +69,9 @@ class Path{
             let ry2 = Math.pow(radiusY, 2)
             let ratio = x2/rx2 + y2/ry2
     
-            if(ratio < 1){
-                point[0] = point[0] + Math.pow((1-ratio)*radiusX*magX, 1.5)*dirX
-                point[1] = point[1] + Math.pow((1-ratio)*radiusY*magY, 1.5)*dirY
+            if(ratio < 1){ // previously scaled improperly with size, numbers now are relative to the testing scale
+                point[0] = point[0] + Math.pow((1-ratio)*220*magX, 1.5)*dirX*radiusX/220
+                point[1] = point[1] + Math.pow((1-ratio)*200*magY, 1.5)*dirY*radiusY/200
             }
         })
     

@@ -91,6 +91,11 @@ class Ref{
         this.mouthRand3 = this.util.seededRand()
         this.mouthRand4 = this.util.seededRand()
 
+        this.accRand1 = this.util.seededRand()
+        this.accRand2 = this.util.seededRand()
+        this.accRand3 = this.util.seededRand()
+        this.accRand4 = this.util.seededRand()
+
         this.hairlineHeight = this.util.seededRand()
         this.hairLength = this.util.seededRand()
 
@@ -144,7 +149,9 @@ class Ref{
 
         //Compensate for the angle and the dist. betweem eyes
         this.leftEye = [(this.face[0]+this.eyeSeperation*this.width)+xAngleAdjustment, this.face[1]-this.eyeHeight*this.height]
+        this.leftBrow = [this.leftEye[0], this.leftEye[1]-this.height/3]
         this.rightEye = [(this.face[0]-this.eyeSeperation*this.width)+xAngleAdjustment,this.face[1]-this.eyeHeight*this.height]
+        this.rightBrow = [this.rightEye[0], this.rightEye[1]-this.height/3]
 
         // mouth points
         this.mouth = [this.face[0],(this.face[1]-this.mouthHeight*this.height)+yAngleAdjustment]

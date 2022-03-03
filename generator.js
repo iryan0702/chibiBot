@@ -19,9 +19,9 @@ class Generator{
         return this.generateLine(point1[0], point1[1], point2[0], point2[1])
     }
 
-    generateLine(x1,y1,x2,y2){
-        let facePath = new Path()
-        let linePointCount = Math.floor(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/10)+4 //15=segmet length
+    generateLine(x1,y1,x2,y2, strokeStyle="#000000"){
+        let facePath = new Path(strokeStyle, "none")
+        let linePointCount = Math.floor(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/10)+2 //15=segmet length
     
         for(let i=0; i<linePointCount;i++){
             let ratio = i/(linePointCount-1)
@@ -374,10 +374,145 @@ class Generator{
     }
 
     // generate face paths: returns a list of paths for the face of a chibi with the specified expressions and Ref
-    generateFacePaths(ref,eyeStyle=0,mouthStyle=0){
+    generateFacePaths(ref,eyeStyle=0,mouthStyle=0,accessories=[0]){
         let facePaths = []
-        let twentyPercentRNG1 = util.propC(1.2,0.8,ref.eyeRand1)
-        let twentyPercentRNG2 = util.propC(1.2,0.8,ref.eyeRand2)
+        let RNG1 = util.propC(1.2,0.8,ref.accRand1)
+        let RNG2 = util.propC(1.2,0.8,ref.accRand2)
+        let RNG3 = util.propC(1.2,0.8,ref.accRand3)
+        let RNG4 = util.propC(1.2,0.8,ref.accRand4)
+
+        //Accessories generation (Under the face)
+        //Expressions stuff accessory (Begins from 100)
+        let expressionAcc= -1
+        for (let i=0; i<accessories.length; i++){
+            if (accessories[i]-100 >=0 && accessories[i]-100 <=99){
+                expressionAcc = accessories[i]-100
+                break
+            }
+            
+        }
+        switch(expressionAcc){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case -1: //No 
+            default:{
+                break
+            }case 0:{ //blush oval
+                let expressionWidth = ref.width/7.5*RNG3
+                let expressionHeight = ref.height/14.5*RNG4
+                facePaths.push(this.generateOval(ref.leftEye[0]+expressionWidth/2,ref.leftEye[1]+expressionHeight/0.27,expressionWidth,expressionHeight,0.2,"#00000000","#FFCCCC55"))
+                facePaths.push(this.generateOval(ref.rightEye[0]-expressionWidth/2,ref.rightEye[1]+expressionHeight/0.27,expressionWidth,expressionHeight,0.2,"#00000000","#FFCCCC55"))
+                break
+            }case 1:{ //Im gonna kill you
+                let expressionWidth = ref.width
+                let expressionHeight = ref.height/1.77
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/15,expressionWidth,expressionHeight,0,360,0.22,"#00000000","#222222BB"))
+                break
+            }case 2:{//eyebags
+                let expressionWidth = ref.width/7.5*RNG3
+                let expressionHeight = ref.height/14.5*RNG4
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1]+expressionHeight/0.47,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1]+expressionHeight/0.47,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                break
+            }
+        }
+
+
+        //Facepaint/signature accessory (Begins from 200)
+        let facepaint= -1
+        for (let i=0; i<accessories.length; i++){
+            if (accessories[i]-200 >=0 && accessories[i]-200 <=99){
+                facepaint = accessories[i]-200
+                break
+            }  
+        }
+        switch(facepaint){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case -1: //No 
+            default:{
+                break
+            }case 0:{//Rambo war paint
+                let expressionWidth = ref.width/7.5*RNG3
+                let expressionHeight = ref.height/22.5*RNG4
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1]+expressionHeight/0.15,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1]+expressionHeight/0.15,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1]+expressionHeight/0.1,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1]+expressionHeight/0.1,expressionWidth,expressionHeight,0.2,"#00000000","#222222BB"))
+                break
+            }case 1:{//Eye Scar left
+                let expressionWidth = ref.width/57.5*RNG3
+                let expressionHeight = ref.height/4.5*RNG4
+                facePaths.push(this.generateOvalP(ref.leftEye,expressionWidth,expressionHeight,-0.02,"#660000","none"))
+                break
+            }case 2:{//Eye Scar right
+                let expressionWidth = ref.width/57.5*RNG3
+                let expressionHeight = ref.height/4.5*RNG4
+                facePaths.push(this.generateOvalP(ref.rightEye,expressionWidth,expressionHeight,-0.02,"#660000","none"))
+                break
+            }
+        }
+        
+        //eyebrows (Begins from 300)
+        let browStyle= -1
+        for (let i=0; i<accessories.length; i++){
+            if (accessories[i]-300 >=0 && accessories[i]-300 <=99){
+                browStyle = accessories[i]-300
+                break
+            }
+        }
+        switch(browStyle){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case -1: //No eyebrow
+            default:{
+                break
+            }
+            case 0:{ //Sadd
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = ref.height/9.5
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1],ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel,ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]))
+                break
+            }case 1:{ //Angy
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = ref.height/9.5
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel,ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1],ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel))
+                break
+            }case 2:{ //Seriously?
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = ref.height/20
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel,ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel,ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel))
+                break
+            }case 3:{ //Suprised
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = -(ref.height/20)
+                facePaths.push(this.generateLine(ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel,ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel))
+                facePaths.push(this.generateLine(ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel,ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel))
+                break
+            }case 4:{ //Sass 
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = -(ref.height/10)
+                facePaths.push(this.generate4PointBezier([ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]],[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel] ,[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel] , [ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel]))
+                facePaths.push(this.generate4PointBezier([ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]],[ref.leftBrow[0],ref.leftBrow[1]+expressionLevel/2] ,[ref.leftBrow[0],ref.leftBrow[1]+expressionLevel/2] , [ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]]))
+                break
+            }case 5:{ //Filrt
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = -(ref.height/10)
+                facePaths.push(this.generate4PointBezier([ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]],[ref.leftBrow[0],ref.leftBrow[1]+expressionLevel] ,[ref.leftBrow[0],ref.leftBrow[1]+expressionLevel] , [ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel]))
+                facePaths.push(this.generate4PointBezier([ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]],[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel/2] ,[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel/2] , [ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]]))
+                break
+            }case 6:{ //Real Suprised
+                let lineLen = ref.width/3.5*RNG3
+                let expressionLevel = -(ref.height/10)
+                facePaths.push(this.generate4PointBezier([ref.leftBrow[0]+lineLen/2,ref.leftBrow[1]+expressionLevel/2],[ref.leftBrow[0],ref.leftBrow[1]+expressionLevel] ,[ref.leftBrow[0],ref.leftBrow[1]+expressionLevel] , [ref.leftBrow[0]-lineLen/2,ref.leftBrow[1]+expressionLevel/2]))
+                facePaths.push(this.generate4PointBezier([ref.rightBrow[0]+lineLen/2,ref.rightBrow[1]+expressionLevel/2],[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel] ,[ref.rightBrow[0],ref.rightBrow[1]+expressionLevel] , [ref.rightBrow[0]-lineLen/2,ref.rightBrow[1]+expressionLevel/2]))
+                break
+            }
+        }
+
+
+        RNG1 = util.propC(1.2,0.8,ref.eyeRand1)
+        RNG2 = util.propC(1.2,0.8,ref.eyeRand2)
+        RNG3 = util.propC(1.2,0.8,ref.eyeRand3)
+        RNG4 = util.propC(1.2,0.8,ref.eyeRand4)
+
         //The eye glossary!
         switch(eyeStyle){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
             case 0:{ //Hollow Beanz
@@ -393,27 +528,27 @@ class Generator{
                 facePaths.push(this.generateOvalP(ref.rightEye, ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,0,"#222222", "#ffffff"))
                 break
             }case 3:{ //smol Horzantal
-                let lineLen = ref.width/4.6*twentyPercentRNG1
+                let lineLen = ref.width/4.6*RNG1
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 break
             }case 4:{ //beeg horizantal
-                let lineLen = ref.width/2.8*twentyPercentRNG1
+                let lineLen = ref.width/2.8*RNG1
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 break
             }case 5:{ //smol vert
-                let lineLen = ref.height/4.6*twentyPercentRNG1
+                let lineLen = ref.height/4.6*RNG1
                 facePaths.push(this.generateLine(ref.leftEye[0],ref.leftEye[1]+lineLen/2,ref.leftEye[0],ref.leftEye[1]-lineLen/2))
                 facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2))
                 break
             }case 6:{ //beeg vert
-                let lineLen = ref.height/2.8*twentyPercentRNG1
+                let lineLen = ref.height/3*RNG1
                 facePaths.push(this.generateLine(ref.leftEye[0],ref.leftEye[1]+lineLen/2,ref.leftEye[0],ref.leftEye[1]-lineLen/2))
                 facePaths.push(this.generateLine(ref.rightEye[0],ref.rightEye[1]+lineLen/2,ref.rightEye[0],ref.rightEye[1]-lineLen/2))
                 break
             }case 7:{ //unimpressed double line
-                let lineLen = ref.width/3.5*twentyPercentRNG1
+                let lineLen = ref.width/3.5*RNG1
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+12,ref.leftEye[0]-lineLen/2,ref.leftEye[1]+12))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+12,ref.rightEye[0]-lineLen/2,ref.rightEye[1]+12))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]-12,ref.leftEye[0]-lineLen/2,ref.leftEye[1]-12))
@@ -421,23 +556,23 @@ class Generator{
                 break
             }case 8:
             default:{ //YAiY
-                let lineLen = ref.width/3.5*twentyPercentRNG1
+                let lineLen = ref.width/3.5*RNG1
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]+22))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+22,ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]-22))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]-22,ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 break
             }case 9:{ //unimpressed stare
-                let lineLen = ref.width/3*twentyPercentRNG1
-                let eyeVert = ref.height/4.1*twentyPercentRNG2
+                let lineLen = ref.width/3*RNG1
+                let eyeVert = ref.height/4.1*RNG2
                 facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1],lineLen/2.5,eyeVert/1.5,0,180,0.2,"#000000", "#666666"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1],lineLen/2.5,eyeVert/1.5,0,180,0.2,"#000000", "#666666"))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+0,ref.leftEye[0]-lineLen/2,ref.leftEye[1]+0))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+0,ref.rightEye[0]-lineLen/2,ref.rightEye[1]+0))
                 break
             }case 10:{ //holding in a laugh
-                let lineLen = ref.width/3.5*twentyPercentRNG1
-                let eyeVert = ref.height/4.1*twentyPercentRNG2
+                let lineLen = ref.width/3.5*RNG1
+                let eyeVert = ref.height/4.1*RNG2
                 facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+12,lineLen/2,eyeVert/1.1,180,360,0.2,"#000000", "#FFFFFF"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+12,lineLen/2,eyeVert/1.1,180,360,0.2,"#000000", "#FFFFFF"))
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1]+12,ref.leftEye[0]-lineLen/2,ref.leftEye[1]+12))
@@ -446,42 +581,42 @@ class Generator{
             }
 
             case 100:{ //Plus sign
-                let lineLen = ref.width/2.8*twentyPercentRNG1
+                let lineLen = ref.width/2.8*RNG1
                 facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#ffffff"))
                 facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#ffffff"))
                 break
             }case 101:{ //Star
-                let lineLen = ref.width*twentyPercentRNG1
+                let lineLen = ref.width*RNG1
                 facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1],ref.height/8*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/4,-0.5,"#222222", "#EEEE44"))
                 facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1],ref.height/8*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/4,-0.5,"#222222", "#EEEE44"))
                 break
             }case 102:{ //Advert vision left
-                let lineLen = ref.width/3*twentyPercentRNG1
-                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                let lineLen = ref.width/3*RNG1
+                let eyeVert = ref.height/4.3*RNG2
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 facePaths.push(this.generatePartialOval(ref.leftEye[0]+lineLen/3,ref.leftEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0]+lineLen/3,ref.rightEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
                 break
             }case 103:{ //Advert vision right
-                let lineLen = ref.width/3*twentyPercentRNG1
-                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                let lineLen = ref.width/3*RNG1
+                let eyeVert = ref.height/4.3*RNG2
                 facePaths.push(this.generateLine(ref.leftEye[0]+lineLen/2,ref.leftEye[1],ref.leftEye[0]-lineLen/2,ref.leftEye[1]))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1],ref.rightEye[0]-lineLen/2,ref.rightEye[1]))
                 facePaths.push(this.generatePartialOval(ref.leftEye[0]-lineLen/3,ref.leftEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0]-lineLen/3,ref.rightEye[1],lineLen/4,eyeVert/2,0,180,0.2,"#000000", "#666666"))
                 break
             }case 104:{ //Angy Boll
-                let lineLen = ref.width/3.8*twentyPercentRNG1
-                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                let lineLen = ref.width/3.8*RNG1
+                let eyeVert = ref.height/4.3*RNG2
                 facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1],lineLen/2,eyeVert/1.1,-60,150,0.2,"#000000", "#BB5555"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1],lineLen/2,eyeVert/1.1,30,240,0.2,"#000000", "#BB5555"))
                 facePaths.push(this.generateLine(ref.leftEye[0]-lineLen/2,ref.leftEye[1]+0.2*eyeVert,ref.leftEye[0],ref.leftEye[1]-0.8*eyeVert))
                 facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+0.2*eyeVert,ref.rightEye[0],ref.rightEye[1]-0.8*eyeVert))
                 break
             }case 105:{ //hearts
-                let lineLen = ref.width/3*twentyPercentRNG1
-                let eyeVert = ref.height/4.3*twentyPercentRNG2
+                let lineLen = ref.width/3*RNG1
+                let eyeVert = ref.height/4.3*RNG2
                 facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.8,eyeVert/0.9,-30,210,-0.2,"#00000000", "#EEBBBB"))
                 facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+eyeVert/3.5,lineLen/1.8,eyeVert/0.9,-30,210,-0.2,"#00000000", "#EEBBBB"))
                 facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,0,180,-0.2,"#000000", "#EEBBBB"))
@@ -498,104 +633,427 @@ class Generator{
             }
         }
 
-        twentyPercentRNG1 = util.propC(1.2,0.8,ref.mouthRand1)
-        twentyPercentRNG2 = util.propC(1.2,0.8,ref.mouthRand2)
+        RNG1 = util.propC(1.2,0.8,ref.mouthRand1)
+        RNG2 = util.propC(1.2,0.8,ref.mouthRand2)
+        RNG3 = util.propC(1.2,0.8,ref.mouthRand3)
+        RNG4 = util.propC(1.2,0.8,ref.mouthRand4)
     
         //The mouth glossary!
         switch(mouthStyle){
             case 0:{ //Emotionless
-                let mouthWidth = ref.width/3.4*twentyPercentRNG1
+                let mouthWidth = ref.width/3.4*RNG1
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1],ref.mouth[0]+mouthWidth/2,ref.mouth[1]))
                 break
             }case 1:{ //Angy
-                let mouthWidth = ref.width/4.4*twentyPercentRNG1
-                let angynessLevel = ref.height/7*twentyPercentRNG2
+                let mouthWidth = ref.width/4.4*RNG1
+                let angynessLevel = ref.height/7*RNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 break
             }case 2:{ //Angy opn
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/4*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/4*RNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0],ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2))
                 break
             }case 3:{ //Smle
-                let mouthWidth = ref.width/4.4*twentyPercentRNG1
-                let angynessLevel = ref.height/7*twentyPercentRNG2
+                let mouthWidth = ref.width/4.4*RNG1
+                let angynessLevel = ref.height/7*RNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 break
             }case 4:{ //Smle opn
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/4*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/4*RNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0],ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2))
                 break
             }case 5: //AAAAAAAaaaAAAAAAAaaaaaaAAAAA
             default:{
-                let mouthWidth = ref.height/10*twentyPercentRNG1
-                let mouthHeight = ref.height/5*twentyPercentRNG2
+                let mouthWidth = ref.height/10*RNG1
+                let mouthHeight = ref.height/5*RNG2
                 facePaths.push(this.generateOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight,0.00,"#000000","#EEBBBB"))
                 break
             }case 6:{ //Smle round
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/2.8*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/2.8*RNG2
                 facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1]-angynessLevel/2,mouthWidth/2,angynessLevel,0,180,0,"#000000","#EEBBBB"))
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
                 break
             }case 7:{ //Sad round
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/2.5*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/2.5*RNG2
                 facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1]+angynessLevel/2,mouthWidth/2,angynessLevel,180,360,0,"#000000","#EEBBBB"))
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2))
                 break
             }case 8:{ //Very Emotionless
-                let mouthWidth = ref.width/99*twentyPercentRNG1
+                let mouthWidth = ref.width/99*RNG1
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1],ref.mouth[0]+mouthWidth/2,ref.mouth[1]))
+                break
+            }case 9:{ //Mildly happy
+                let mouthWidth = ref.width/3.4*RNG1
+                let emotionLevel = ref.height/7.7*RNG2
+                facePaths.push(this.generate4PointBezier([ref.mouth[0]-mouthWidth/2,ref.mouth[1]],[ref.mouth[0]-mouthWidth/4,ref.mouth[1]+emotionLevel],[ref.mouth[0]+mouthWidth/4,ref.mouth[1]+emotionLevel],[ref.mouth[0]+mouthWidth/2,ref.mouth[1]]))
+                break
+            }case 10:{ //Mildly unhappy
+                let mouthWidth = ref.width/3.4*RNG1
+                let emotionLevel = ref.height/9.7*RNG2
+                facePaths.push(this.generate4PointBezier([ref.mouth[0]-mouthWidth/2,ref.mouth[1]],[ref.mouth[0]-mouthWidth/5,ref.mouth[1]-emotionLevel],[ref.mouth[0]+mouthWidth/5,ref.mouth[1]-emotionLevel],[ref.mouth[0]+mouthWidth/2,ref.mouth[1]]))
+                break
+            }case 11:{ //ツ
+                let mouthWidth = ref.width/3.4*RNG1
+                let emotionLevel = ref.height/7.7*RNG2
+                facePaths.push(this.generate4PointBezier([ref.mouth[0]-mouthWidth/2,ref.mouth[1]],[ref.mouth[0]-mouthWidth/4,ref.mouth[1]+emotionLevel/2],[ref.mouth[0]+mouthWidth/4,ref.mouth[1]+emotionLevel/2],[ref.mouth[0]+mouthWidth/2,ref.mouth[1]-emotionLevel/2]))
+                break
+            }case 12:{ //~
+                let mouthWidth = ref.width/3.4*RNG1
+                let emotionLevel = ref.height/9.7*RNG2
+                facePaths.push(this.generate4PointBezier([ref.mouth[0]-mouthWidth/2,ref.mouth[1]],[ref.mouth[0]-mouthWidth/5,ref.mouth[1]+emotionLevel],[ref.mouth[0]+mouthWidth/5,ref.mouth[1]-emotionLevel],[ref.mouth[0]+mouthWidth/2,ref.mouth[1]]))
+                break
+            }case 13:{ //micro Smle
+                let mouthWidth = ref.width/4.5*RNG1
+                let angynessLevel = ref.height/5.1*RNG2
+                facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1]-angynessLevel/2,mouthWidth/2,angynessLevel,0,180,0,"#000000","#EEBBBB"))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
+                break
+            }case 14:{ //micro Sad 
+                let mouthWidth = ref.width/4.5*RNG1
+                let angynessLevel = ref.height/4.5*RNG2
+                facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1]+angynessLevel/2,mouthWidth/2,angynessLevel,180,360,0,"#000000","#EEBBBB"))
+                facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2))
                 break
             }
 
 
             case 100:{ //Blep Left
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/5.8*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/5.8*RNG2
                 facePaths.push(this.generatePartialOval(ref.mouth[0]-mouthWidth/4,ref.mouth[1]-angynessLevel/2,mouthWidth/4,angynessLevel,0,180,0,"#000000","#EEBBBB"))
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
                 break
             }case 101:{ //Blep Reft
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/5.8*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/5.8*RNG2
                 facePaths.push(this.generatePartialOval(ref.mouth[0]+mouthWidth/4,ref.mouth[1]-angynessLevel/2,mouthWidth/4,angynessLevel,0,180,0,"#000000","#EEBBBB"))
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2))
                 break
             }case 102:{ //Cross
-                let mouthWidth = ref.width/4.5*twentyPercentRNG1
-                let angynessLevel = ref.height/4.5*twentyPercentRNG2
+                let mouthWidth = ref.width/4.5*RNG1
+                let angynessLevel = ref.height/4.5*RNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]+mouthWidth/2,ref.mouth[1]+angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2,ref.mouth[1]-angynessLevel/2,ref.mouth[0]-mouthWidth/2,ref.mouth[1]+angynessLevel/2))
                 break
             }case 103:{ //Granny Face
-                let mouthWidth = ref.width/2.5*twentyPercentRNG1
-                let angynessLevel = ref.height/7*twentyPercentRNG2
+                let mouthWidth = ref.width/2.5*RNG1
+                let angynessLevel = ref.height/7*RNG2
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2,ref.mouth[1],ref.mouth[0]+mouthWidth/2,ref.mouth[1]))
                 facePaths.push(this.generateLine(ref.mouth[0]-mouthWidth/2-angynessLevel/4,ref.mouth[1]+angynessLevel/2,ref.mouth[0]-mouthWidth/2+angynessLevel/4,ref.mouth[1]-angynessLevel/2))
                 facePaths.push(this.generateLine(ref.mouth[0]+mouthWidth/2+angynessLevel/4,ref.mouth[1]+angynessLevel/2,ref.mouth[0]+mouthWidth/2-angynessLevel/4,ref.mouth[1]-angynessLevel/2))
                 break
             }case 104:{ //Derpy McDroll
-                let mouthWidth = ref.width/4*twentyPercentRNG1
-                let mouthHeight = ref.height/4*twentyPercentRNG2
+                let mouthWidth = ref.width/4*RNG1
+                let mouthHeight = ref.height/4*RNG2
                 facePaths.push(this.generateOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight,0.00,"#00000000","#EEBBBB"))
                 facePaths.push(this.generatePartialOval(ref.mouth[0],ref.mouth[1],mouthWidth,mouthHeight,80,400,0.00,"#000000","#EEBBBB"))
                 facePaths.push(this.generatePartialOval(ref.mouth[0]+mouthWidth/2,ref.mouth[1]+mouthHeight*Math.sqrt(3)/2,mouthWidth/3,mouthHeight/3,-30,150,0.00,"#000000","#EEBBBB"))
                 break
+            }case 105:{ //munch
+                let mouthWidth = ref.width/3.4*RNG1
+                let emotionLevel = ref.height/9.7*RNG2
+                facePaths.push(this.generate4PointBezier([ref.mouth[0]-mouthWidth/2,ref.mouth[1]],[ref.mouth[0]-mouthWidth/5,ref.mouth[1]+emotionLevel],[ref.mouth[0]+mouthWidth/5,ref.mouth[1]-emotionLevel],[ref.mouth[0]+mouthWidth/2,ref.mouth[1]]))
+                if (ref.angleX<=0)
+                    facePaths.push(this.generate4PointBezier([ref.mouth[0]+mouthWidth/1.6,ref.mouth[1]-emotionLevel],
+                                                             [ref.mouth[0]+mouthWidth/2,ref.mouth[1]],
+                                                             [ref.mouth[0]+mouthWidth/2,ref.mouth[1]],
+                                                             [ref.mouth[0]+mouthWidth/1.6,ref.mouth[1]+emotionLevel]))
+                else
+                    facePaths.push(this.generate4PointBezier([ref.mouth[0]+mouthWidth/1.6,ref.mouth[1]-emotionLevel],
+                                                             [ref.mouth[0]+mouthWidth/2,ref.mouth[1]],
+                                                             [ref.mouth[0]+mouthWidth/2,ref.mouth[1]],
+                                                             [ref.mouth[0]+mouthWidth/1.6,ref.mouth[1]+emotionLevel]))
+                break
+            }
+        }
+
+        RNG1 = util.propC(1.2,0.8,ref.accRand1)
+        RNG2 = util.propC(1.2,0.8,ref.accRand2)
+        RNG3 = util.propC(1.2,0.8,ref.accRand3)
+        RNG4 = util.propC(1.2,0.8,ref.accRand4)
+
+        //hats (starts from 400)
+        let hats= 0
+        for (let i=0; i<accessories.length; i++){
+            if (accessories[i]-400 >=0 && accessories[i]-400 <=99){
+                hats = accessories[i]-400
+                break
+            }  
+        }
+        switch(hats){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case -1: //No 
+            default:{
+                break
+            }case 0:{//tophat
+                let hatHeight = ref.height/1.1*RNG2
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/3.8*RNG4
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight/2,brimWidth/2,hatHeight/2,-0,360,0.4,"#00000000","#444444"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height,brimWidth,brimHeight,-60,240,0,"#000000","#444444"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-brimHeight/2.5,brimWidth/2,brimHeight/2,-0,180,0,"#000000","#444444"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight,brimWidth/2,brimHeight/2,-0,360,0,"#000000","#444444"))
+                facePaths.push(this.generateLine(ref.centerX-brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX-brimWidth/2,ref.centerY-ref.height-hatHeight))
+                facePaths.push(this.generateLine(ref.centerX+brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX+brimWidth/2,ref.centerY-ref.height-hatHeight))
+                break
+            }case 1:{//TALL tophat
+                let hatHeight = ref.height/0.3*RNG2
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/3.8*RNG4
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight/2,brimWidth/2,hatHeight/2,-0,360,0.4,"#00000000","#444444"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height,brimWidth,brimHeight,-60,240,0,"#000000","#444444"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-brimHeight/2.5,brimWidth/2,brimHeight/2,-0,180,0,"#000000","#444444"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight,brimWidth/2,brimHeight/2,-0,360,0,"#000000","#444444"))
+                facePaths.push(this.generateLine(ref.centerX-brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX-brimWidth/2,ref.centerY-ref.height-hatHeight))
+                facePaths.push(this.generateLine(ref.centerX+brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX+brimWidth/2,ref.centerY-ref.height-hatHeight))
+                break
+            }case 2:{//Straw hat
+                let brimWidth = ref.width/0.7*RNG3
+                let brimHeight = ref.width/2.7*RNG4
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/1.5,brimWidth,brimHeight,-70,250,0,"#000000","#d1be88"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/1.3-brimHeight/2.5,brimWidth/2.4,brimHeight*1.2,180,360,0,"#000000","#d1be88"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/1.3-brimHeight/2.5,brimWidth/2.4,brimHeight/2,-0,180,0,"#AA3333","none"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/1.3-brimHeight/2.5+10,brimWidth/2.4,brimHeight/2,-0,180,0,"#AA3333","none"))
+                facePaths.push(this.generate4PointBezier([ref.centerX-brimWidth/1.3,ref.centerY-ref.height/1.3-brimHeight/2.5],
+                                                         [ref.centerX-brimWidth/3.4,ref.centerY-ref.height/1.3-brimHeight/2.5],
+                                                         [ref.centerX-brimWidth/3.4,ref.centerY-ref.height/1.3-brimHeight/2.5],
+                                                         [ref.centerX-brimWidth/1.5,ref.centerY-ref.height/1.3-brimHeight/9], "#AA3333"))
+                break
+            }case 3:{//Baseball cap red
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/1.9*RNG4
+                if (ref.angleX<=0)
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,-90,90,0.03,"#000000","#AA3333"))
+                else
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,90,270,0.03,"#000000","#AA3333"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,360,0,"#00000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,180,360,0,"#000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#00000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5+brimHeight/2.9,brimWidth/1.99,brimHeight*1.34,180,360,0,"#000000","#AA3333"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#000000","none"))
+                break
+            }case 4:{//Baseball cap gren
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/1.9*RNG4
+                if (ref.angleX<=0)
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,-90,90,0.03,"#000000","#33AA33"))
+                else
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,90,270,0.03,"#000000","#33AA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,360,0,"#00000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,180,360,0,"#000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#00000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5+brimHeight/2.9,brimWidth/1.99,brimHeight*1.34,180,360,0,"#000000","#33AA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#000000","none"))
+                break
+            }case 5:{//Baseball cap bleu
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/1.9*RNG4
+                if (ref.angleX<=0)
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,-90,90,0.03,"#000000","#3333AA"))
+                else
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,90,270,0.03,"#000000","#3333AA"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,360,0,"#00000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,180,360,0,"#000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#00000000","#DDDDDD"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5+brimHeight/2.9,brimWidth/1.99,brimHeight*1.34,180,360,0,"#000000","#3333AA"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#000000","none"))
+                break
+            }case 6:{//Baseball cap bee
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/1.9*RNG4
+                if (ref.angleX<=0)
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,-90,90,0.03,"#000000","#CCBB22"))
+                else
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.8,brimHeight/2.5,90,270,0.03,"#000000","#CCBB22"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,360,0,"#00000000","#222222"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,180,360,0,"#000000","#222222"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#00000000","#222222"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5+brimHeight/2.9,brimWidth/1.99,brimHeight*1.34,180,360,0,"#000000","#CCBB22"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#000000","none"))
+                break
+            }case 7:{//hardhat
+                let brimWidth = ref.width/1*RNG3
+                let brimHeight = ref.width/1.22*RNG4
+                if (ref.angleX<=0){
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.3,brimHeight/2.5,-90,90,0.03,"#000000","#CCAA33"))
+                }else{
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.3,brimHeight/2.5,90,270,0.03,"#000000","#CCAA33"))
+                }
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,360,0,"#00000000","#CCAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,180,360,0,"#000000","#CCAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#000000","#CCAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/1.3,brimWidth*0.93,brimHeight/2.5,-0,180,0,"#000000","none"))
+                if (ref.angleX<=0){
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5-brimHeight/2.4,brimWidth/1.99,brimHeight/2,270,360,0,"#000000","none"))
+                    facePaths.push(this.generateCircle(ref.centerX+brimWidth/2,ref.centerY-ref.height/2.5-brimHeight/2.5-brimHeight/2.4,brimWidth/5,0,"#000000","#AABBEE"))
+                }else{
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5-brimHeight/2.4,brimWidth/1.99,brimHeight/2,180,270,0,"#000000","none"))
+                    facePaths.push(this.generateCircle(ref.centerX-brimWidth/2,ref.centerY-ref.height/2.5-brimHeight/2.5-brimHeight/2.4,brimWidth/5,0,"#000000","#AABBEE"))
+                }
+                break
+            }case 8:{//HELIKOPTER
+                let brimWidth = ref.width/1.2*RNG3
+                let brimHeight = ref.width/1.9*RNG4
+                if (ref.angleX<=0)
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.6,brimHeight/2.5,-90,90,0.03,"#000000","#3333AA"))
+                else
+                    facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*1.6,brimHeight/2.5,90,270,0.03,"#000000","#3333AA"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,360,0,"#00000000","#33AA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,180,360,0,"#000000","#33AA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#00000000","#33AA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-90,90,0,"#00000000","#AAAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/1.5,brimWidth,brimHeight/2.5,-90,90,0,"#00000000","#AAAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight,270,360,0,"#000000","#AAAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,90,0,"#00000000","#AAAA33"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5+brimHeight/2.9,brimWidth/1.99,brimHeight*1.34,180,360,0,"#000000","#AA3333"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth,brimHeight/2.5,-0,180,0,"#000000","none"))
+                facePaths.push(this.generateOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight*1.44,2,brimWidth/9,0,"#000000","#AABBEE"))
+                facePaths.push(this.generateOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight*1.74,brimWidth/3,2,0,"#000000","#AABBEE"))
+                break
+            }case 9:{//Beaniee
+                let brimWidth = ref.width/1*RNG3
+                let brimHeight = ref.width/1.1*RNG4
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/9,brimWidth,brimHeight/4.5,-0,360,0,"#00000000","#666666"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/9,brimWidth,brimHeight,180,360,0,"#000000","#666666"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/9,brimWidth,brimHeight/4.5,-0,180,0,"#000000","#666666"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/9,brimWidth*0.15,brimHeight,185,355,0,"#000000","none"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/9,brimWidth*0.5,brimHeight,188,352,0,"#000000","none"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/9,brimWidth*0.75,brimHeight,192,348,0,"#000000","none"))
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/2.5,brimWidth*0.93,brimHeight/4.5,-0,180,0,"#000000","none"))
+                facePaths.push(this.generateOval(ref.centerX,ref.centerY-ref.height/2.5-brimHeight/0.86,brimWidth/6,brimWidth/6,0,"#000000","#666666"))
+                break
+            }case 10:{//flower
+                let brimWidth = ref.width/1*RNG3
+                let brimHeight = ref.width/1.1*RNG4
+                facePaths.push(this.generateOvalWonky(ref.leftEye[0],ref.leftEye[1]-ref.height/1.7, ref.height/4, ref.height/4,-0.64,"#EEEEEE", "#DDDDDD"))
+                facePaths.push(this.generateOvalWonky(ref.leftEye[0],ref.leftEye[1]-ref.height/1.7, ref.height/99, ref.height/99,0,"#EEAA66", "#DDDDDD"))
             }
             
         }
+        //glasses (starts from 500)
+        let glasses= -1
+        for (let i=0; i<accessories.length; i++){
+            if (accessories[i]-500 >=0 && accessories[i]-500 <=99){
+                glasses = accessories[i]-500
+                break
+            }  
+        }
+        switch(glasses){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+            case -1: //No 
+            default:{
+                break
+            }case 0:{//distinguised gentlemen
+                let glassSize = ref.height/3.1*RNG1
+                facePaths.push(this.generateCircleP(ref.leftEye,glassSize,0,"#EECC66"))
+                facePaths.push(this.generateLine(ref.leftEye[0]+10+glassSize,ref.leftEye[1],ref.leftEye[0]+glassSize+10,ref.leftEye[1]+glassSize*2,"#EECC66"))
+                break
+            }case 1:{//Grey square glasses
+                let glassSize = ref.width/3.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generateOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.6,0.2,"#555555","#00226622"))
+                facePaths.push(this.generateOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.6,0.2,"#555555","#00226622"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#555555"))
+                break
+            }case 2:{//3d glasses
+                let glassSize = ref.width/2.9*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generateOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.6,0.25,"#DDDDDD","#88000055"))
+                facePaths.push(this.generateOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.6,0.25,"#DDDDDD","#00008855"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#DDDDDD"))
+                break
+            }case 3:{//harry potty
+                let glassSize = ref.width/3.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generateOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize,0,"#111111","#44226644"))
+                facePaths.push(this.generateOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize,0,"#111111","#44226644"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#111111"))
+                break
+            }case 4:{//hey beter
+                let glassSize = ref.width/5.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generateOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize,0,"#111111","#44226688"))
+                facePaths.push(this.generateOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize,0,"#111111","#44226688"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#111111"))
+                break
+            }case 5:{//red semiframe
+                let glassSize = ref.width/3.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.6,-20,200,0,"#AA3333","#22222222"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.6,-20,200,0,"#AA3333","#22222222"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#AA3333"))
+                break
+            }case 6:{//avaitor
+                let glassSize = ref.width/3.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.8,0,180,0,"#999999","#224444AA"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.8,0,180,0,"#999999","#224444AA"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.5,180,360,0.22,"#999999","#224444AA"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.5,180,360,0.22,"#999999","#224444AA"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#999999"))
+                break
+            }case 7:{//meme sunglass
+                let glassSize = ref.width/3.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.6,0,180,0.1,"#111111","#222222DD"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.6,0,180,0.1,"#111111","#222222DD"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize/1.3,glassSize/1.3*0.6,15,70,0.1,"#EEEEEEDD","none"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize/1.3,glassSize/1.3*0.6,15,70,0.1,"#EEEEEEDD","none"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#111111"))
+                break
+            }case 8:{//beeg sunglass
+                let glassSize = ref.width/3.1*RNG1
+                let glassCenterPull = ref.width/17*RNG1
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize,glassSize,0,180,0.12,"#111111","#222222DD"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize,glassSize,0,180,0.12,"#111111","#222222DD"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize/1.3,glassSize/1.3,15,70,0.12,"#EEEEEEDD","none"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize/1.3,glassSize/1.3,15,70,0.12,"#EEEEEEDD","none"))
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
+                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
+                facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
+                                                         [ref.rightEye[0]+glassCenterPull+glassSize,ref.rightEye[1]],"#111111"))
+                break
+            }
+        }
+        
         
         return facePaths
     }
+
+    
 
     //smudge area of multiple paths
     //allPaths should be an array of paths

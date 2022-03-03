@@ -32,7 +32,7 @@ class Ref{
     //     this.calculatePoints()
     // }
 
-    constructor(cX=1000, cY=1000, baseSeed= Math.floor(Math.random()*100000), ctx=null){
+    constructor(cX=1000, cY=1000, baseSeed= Math.floor(Math.random()*1000000), ctx=null){
 
         //utilities
         this.ctx = ctx
@@ -47,13 +47,22 @@ class Ref{
     }
 
     setAllSeededValues(seed){
-        this.util.seed("" + seed)
-        this.widthScale = this.util.prop(0.8,1.6,this.util.seededRand())
+        this.baseSeed = seed
+        this.util = new Util(this.ctx)
+        this.util.seed("" + this.baseSeed)
+        this.widthScale = this.util.prop(0.8,1.75,this.util.seededRand())
 
-        this.angleX = this.util.randRange(-20, 20)
-        this.angleY = this.util.randRange(-5, -25)
+        this.angleX = Math.floor(this.util.prop(-20,20.9999,this.util.seededRand())) 
+        this.angleY = Math.floor(this.util.prop(-25,-5.0001,this.util.seededRand())) 
 
-        this.updateScale(200)
+        this.updateScale(this.util.prop(100,360,this.util.seededRand()))
+
+        this.hairColor = this.rgbToHex(Math.floor(this.util.prop(0,255.999,this.util.seededRand())),Math.floor(this.util.prop(0,255.999,this.util.seededRand())),Math.floor(this.util.prop(0,255.999,this.util.seededRand())))
+        let skinTone = this.util.prop(this.util.propC(1,6,this.util.seededRand()),7.5,this.util.seededRand())
+        let r = Math.min(255, Math.floor(skinTone * this.util.prop(43,47,this.util.seededRand())))
+        let g = Math.min(255, Math.floor(skinTone * this.util.prop(32,35,this.util.seededRand())))
+        let b = Math.min(255, Math.floor(skinTone * this.util.prop(28,32,this.util.seededRand())))
+        this.faceColor = this.rgbToHex(r,g,b)
 
         this.eyeSeperation = this.util.prop(0.3,0.9,this.util.seededRand())
         // 1 = half of face's X len
@@ -62,12 +71,24 @@ class Ref{
         this.mouthHeight = this.util.prop(-0.40,-0.20,this.util.seededRand())
         // 1 = half of face's Y height
         //All of the seperation factor calculates from the point of the front of the face
-        let mouthType = 1
-        let eyeType = 1
-        let eyebrowType = 1
+        this.allAccessories = [100,101,102,200,201,202,300,301,302,303,304,305,306,400,401,402,403,404,405,406,407,408,409,410,500,501,502,503,504,505,506,507,508] 
+        this.allEyes = [0,1,2,3,4,5,6,7,8,9,10,100,101,102,103,104,105,106]
+        this.allMouths = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,100,101,102,103,104,105]
+
+        this.mouthStyle = this.allMouths[Math.floor(this.util.prop(0,this.allMouths.length,this.util.seededRand()))]
+        this.eyeStyle = this.allEyes[Math.floor(this.util.prop(0,this.allEyes.length,this.util.seededRand()))]
+        this.accessories = []
+        if(this.util.seededRand() < 0.75){ 
+            this.accessories.push(this.allAccessories[Math.floor(this.util.prop(0,this.allAccessories.length,this.util.seededRand()))])
+        }
 
         this.setRandoms()
-        this.calculatePoints()
+        this.updatePoints()
+    }
+
+    setCenter(x, y){
+        this.centerX = x
+        this.centerY = y
     }
 
     updateScale(scale){
@@ -75,6 +96,7 @@ class Ref{
         this.width = this.widthScale*this.scale
         this.height = this.scale
         this.length = this.scale*(this.widthScale+1)/2
+        this.updatePoints()
     }
 
     setRandoms(){
@@ -117,7 +139,8 @@ class Ref{
         this.chinBulge = this.util.seededRand()
     }
 
-    calculatePoints(){
+    //update points for after angles are changed
+    updatePoints(){
         this.faceAngleDirX = this.angleX/Math.abs(this.angleX) // direction [-1/1] of face
         if(isNaN(this.faceAngleDirX)) this.faceAngleDirX = 0
 
@@ -155,6 +178,15 @@ class Ref{
 
         // mouth points
         this.mouth = [this.face[0],(this.face[1]-this.mouthHeight*this.height)+yAngleAdjustment]
+    }
+
+    componentToHex(c) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+      
+    rgbToHex(r, g, b) {
+        return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
     }
 
     DrawRefPoints(){

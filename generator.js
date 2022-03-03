@@ -374,12 +374,15 @@ class Generator{
     }
 
     // generate face paths: returns a list of paths for the face of a chibi with the specified expressions and Ref
-    generateFacePaths(ref,eyeStyle=0,mouthStyle=0,accessories=[0]){
+    generateFacePaths(ref){
         let facePaths = []
         let RNG1 = util.propC(1.2,0.8,ref.accRand1)
         let RNG2 = util.propC(1.2,0.8,ref.accRand2)
         let RNG3 = util.propC(1.2,0.8,ref.accRand3)
         let RNG4 = util.propC(1.2,0.8,ref.accRand4)
+        let eyeStyle = ref.eyeStyle
+        let mouthStyle = ref.mouthStyle
+        let accessories = ref.accessories
 
         //Accessories generation (Under the face)
         //Expressions stuff accessory (Begins from 100)
@@ -389,9 +392,8 @@ class Generator{
                 expressionAcc = accessories[i]-100
                 break
             }
-            
         }
-        switch(expressionAcc){ //(I used a weird format for case here to avoid scope issues + my IDE was being weird)
+        switch(expressionAcc){ //I: (I used a weird format for case here to avoid scope issues + my IDE was being weird)
             case -1: //No 
             default:{
                 break
@@ -414,7 +416,6 @@ class Generator{
                 break
             }
         }
-
 
         //Facepaint/signature accessory (Begins from 200)
         let facepaint= -1
@@ -783,7 +784,7 @@ class Generator{
         RNG4 = util.propC(1.2,0.8,ref.accRand4)
 
         //hats (starts from 400)
-        let hats= 0
+        let hats=-1
         for (let i=0; i<accessories.length; i++){
             if (accessories[i]-400 >=0 && accessories[i]-400 <=99){
                 hats = accessories[i]-400

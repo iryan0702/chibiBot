@@ -105,6 +105,15 @@ class Path{
         }
     }
 
+    // reverse the order of all the points
+    reversePath(){
+        let newPathPoints = []
+        this.points.forEach(point => {
+            newPathPoints.unshift(point)
+        })
+        this.points = newPathPoints
+    }
+
     // basic draw function to draw through all points line by line (can add different types of draw later)
     draw(drawCtx, markPoints=false){
         if(this.fillStyle != "none"){

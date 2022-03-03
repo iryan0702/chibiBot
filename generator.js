@@ -21,7 +21,7 @@ class Generator{
 
     generateLine(x1,y1,x2,y2){
         let facePath = new Path()
-        let linePointCount = Math.floor(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/10)+2 //15=segmet length
+        let linePointCount = Math.floor(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))/10)+4 //15=segmet length
     
         for(let i=0; i<linePointCount;i++){
             let ratio = i/(linePointCount-1)
@@ -54,7 +54,7 @@ class Generator{
     //good protrusion for a face shape is 0.05
     generateOval(centerX, centerY, radiusX, radiusY, protrusion=0, strokeStyle="#000000", fillStyle="none"){
         let facePath = new Path(strokeStyle, fillStyle)
-        let numPoints = ((radiusX+radiusY)*3.1415)/10+4
+        let numPoints = Math.floor(((radiusX+radiusY)*3.1415)/10)+4
         let degreePerStep = 360/(numPoints-1)
         let dg = (numPoints-1)/8 //number of points before each diagonal is reached
         for(let i = 0; i < numPoints; i++){
@@ -68,7 +68,7 @@ class Generator{
 
     generateOvalWonky(centerX, centerY, radiusX, radiusY, protrusion=0, strokeStyle="#000000", fillStyle="none"){
         let facePath = new Path(strokeStyle, fillStyle)
-        let numPoints = ((radiusX+radiusY)*3.1415)/10+4
+        let numPoints = Math.floor(((radiusX+radiusY)*3.1415)/10)+4
         let degreePerStep = 360/(numPoints-1)
         let dg = (numPoints-1)/14 
         for(let i = 0; i < numPoints; i++){
@@ -81,19 +81,19 @@ class Generator{
     }
 
     generatePartialOval(centerX, centerY, radiusX, radiusY, angle1, angle2, protrusion=0, strokeStyle="#000000", fillStyle="none"){
-            let facePath = new Path(strokeStyle, fillStyle)
-            let numPoints = ((radiusX+radiusY)*3.1415)/10+4 //num points for a full circle
-            numPoints = Math.max(3, Math.floor(numPoints * (angle2-angle1)/360)) //num points for the specified arc
-            let degreePerStep = (angle2-angle1)/(numPoints-1)
-            let dg = (numPoints-1)/8 //number of points before each diagonal is reached
-            for(let i = 0; i < numPoints; i++){
-                let protrude = 1 + protrusion * (Math.abs((i+dg)%(dg*2) - dg)/dg)
-                let degree = (i*degreePerStep + angle1)*radian
-                facePath.addPoint([centerX + Math.cos(degree)*radiusX*protrude, centerY + Math.sin(degree)*radiusY*protrude])
-            }
-            
-            return facePath
+        let facePath = new Path(strokeStyle, fillStyle)
+        let numPoints = Math.floor(((radiusX+radiusY)*3.1415)/10)+4 //num points for a full circle
+        numPoints = Math.max(3, Math.floor(numPoints * (angle2-angle1)/360 + 1)) //num points for the specified arc
+        let degreePerStep = (angle2-angle1)/(numPoints-1)
+        let dg = (numPoints-1)/8/((angle2-angle1)/360) //number of points before each diagonal is reached
+        for(let i = 0; i < numPoints; i++){
+            let protrude = 1 + protrusion * (Math.abs((i+dg)%(dg*2) - dg)/dg)
+            let degree = (i*degreePerStep + angle1)*radian
+            facePath.addPoint([centerX + Math.cos(degree)*radiusX*protrude, centerY + Math.sin(degree)*radiusY*protrude])
         }
+        
+        return facePath
+    }
 
     //generate an oval with start and end angles
 
@@ -106,12 +106,11 @@ class Generator{
     //  bias mode works better with more points (preferably > 10)
 
     generate4PointBezier(p1, p2, p3, p4, strokeStyle="#000000", forcePointNum="none", ratioBias=-1){
-        console.log("bias: " + ratioBias)
         let curvePath = new Path(strokeStyle, "none")
         let curveLength = ((util.dist(p1, p2) + util.dist(p3, p2) + util.dist(p3, p4)) + (util.dist(p1, p4)))/2 //an extremely generous estimation of the curve length, actual value takes an EXTREME amount of math to calculate
         let numPoints = forcePointNum
         if(numPoints == "none"){
-            numPoints = (curveLength)/10+2 //num points for a full circle
+            numPoints = Math.floor((curveLength)/10)+2 //num points for a full circle
         }else if(isNaN(numPoints)){
             throw "bezier curve force point num is not a valid input!"
         }
@@ -127,7 +126,6 @@ class Generator{
             for(let i = 0; i < numPoints-1; i++){
                 totalBiasIntegral += this.circleBiasPoint(ratioBias, i/(numPoints-2))
             }
-            console.log("bias activated!")
         }
         let biasProgress = 0
 
@@ -157,6 +155,28 @@ class Generator{
         return Math.sqrt(1-((x-bias)**2))
     }
 
+    //simpler 3 point version (no bias mode)
+    generate3PointBezier(p1, p2, p3, strokeStyle="#000000"){
+        let curvePath = new Path(strokeStyle, "none")
+        let curveLength = ((util.dist(p1, p2) + util.dist(p3, p2)) + (util.dist(p1, p3)))/2 //an extremely generous estimation of the curve length, actual value takes an EXTREME amount of math to calculate
+        let numPoints = Math.floor((curveLength)/10+2) //num points for a full circle
+
+        // regularly, the generation is linear
+        let ratioPerStep = 1.0/(numPoints-1)
+
+        //hardcoded way cause this is too much brain for me
+        for(let i = 0; i < numPoints; i++){
+            let ratio = ratioPerStep*i
+
+            let p1a = util.interpolatePoint(p1,p2,ratio)
+            let p2a = util.interpolatePoint(p2,p3,ratio)
+
+            let p1b = util.interpolatePoint(p1a,p2a,ratio)
+            curvePath.addPoint(p1b)
+        }
+        return curvePath
+    }
+
     /////
     //complex path generations: these generations take in a Ref object to form the shapes for the chibi
     /////
@@ -167,6 +187,9 @@ class Generator{
         //generate base oval for head shape
         let roundedness = util.propC(0.07,0,ref.headRoundedness)
         let headPath = this.generateOval(ref.centerX, ref.centerY, ref.width, ref.height, roundedness, "#222222")//, "#faeacf")
+
+        // let hairPath = this.generateOval(ref.centerX, ref.centerY, ref.width*1.03, ref.height*1.03, roundedness, "#222222")//, "#faeacf")
+        let hairPath = this.generatePartialOval(ref.centerX, ref.centerY, ref.width*1.04, ref.height*1.04, 180, 360, roundedness, "#222222")//, "#faeacf")
 
         //generate a line to keep track of left and right head reference points
         let headLRRef = this.generateLineP(ref.HEAD_LEFT, ref.HEAD_RIGHT)
@@ -180,14 +203,14 @@ class Generator{
         let smudgeY = util.prop(0,0.055,ref.chinBulge)
         
         
-        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY)
         //chin smudge params (R)
         centerX = ref.HEAD_RIGHT[0]
-        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY)
         //chin smudge params (correct for egregious butt chins that may form from the previous smudges)
         centerX = ref.HEAD_CENTER[0]
         smudgeY *= 0.8
-        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY)
 
         //cheek smudge params: Drag the face in its direction to form a cheek bulge
         //cheek smudge is composed of a left smudge and right smudge, with a rightmost limit and leftmost limit respectively
@@ -196,7 +219,6 @@ class Generator{
         if(buldgeness < -0.08){
             buldgeness = util.prop(0,-0.08,ref.cheekBulge)
         }
-        console.log(buldgeness)
         let centerThreshold = util.prop(0.3,0.125,(ref.angleY+25)/25) //the limit changes depending on the y angle of the face
         centerX = Math.min(ref.centerX-ref.width*centerThreshold, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
         centerY = ref.HEAD_BOTTOM[1]
@@ -204,76 +226,150 @@ class Generator{
         smudgeHeight = ref.height*1.3
         smudgeX = buldgeness
         // console.log("anglex: " + ref.angleX)
-        let dimSmudge = Math.min(1, Math.abs(ref.angleX/40)+0.75) //diminish the cheek smudge if this side is looking close to center
-        if(ref.angleX < 0) dimSmudge = 0.75
+        let minSmudge = 0.75 + (Math.abs(ref.angleY)-5)/20*0.15 //smudge can be as low as 0.75 when face is looking straight forward (about -5 = yAngle)
+        let dimSmudge = Math.min(1, Math.abs(ref.angleX/40)+minSmudge) //diminish the cheek smudge if this side is looking close to center
+        if(ref.angleX < 0) dimSmudge = minSmudge
         smudgeX *= dimSmudge
         smudgeY = 0
         // console.log("leftSmudge: " + dimSmudge + " , " + smudgeX)
-        this.smudgeAreas([headPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairPath, headLRRef],centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY)
 
         //smudge right
         centerX = Math.max(ref.centerX+ref.width*centerThreshold, ref.centerX-ref.width*Math.sin(ref.angleX*radian)*3)
         smudgeX = buldgeness
-        dimSmudge = Math.min(1, Math.abs(ref.angleX/40)+0.75)
-        if(ref.angleX > 0) dimSmudge = 0.75
+        dimSmudge = Math.min(1, Math.abs(ref.angleX/40)+minSmudge)
+        if(ref.angleX > 0) dimSmudge = minSmudge
         smudgeX *= dimSmudge*-1
         // console.log("rightSmudge: " + dimSmudge + " , " + smudgeX)
-        this.smudgeAreas([headPath, headLRRef], centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
+        this.smudgeAreas([headPath, hairPath, headLRRef], centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY)
 
         return {
             headPath: headPath,
+            hairPath: hairPath,
             headLRRef: headLRRef
         };
     }
 
     //generate hair bangs by taking random segments from the top hairline and bottom hairline
     generateHairBangs(ref, headLeftPoint, headRightPoint, ctx=null){
-        //generate hairlines
+        //generate hairlines: general offset and fixed point count
         let hairlineWidthOffset = ref.width/120 * ref.angleX * -1
         let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.75) * util.prop(1,1.4,ref.hairlineHeight) // first height = hairline height/forehead size
         let hairlinePointCount = Math.floor(ref.width/200*40 + ref.height/200*10)
-        let hairlineBias = util.prop(0.1,0.9,(ref.angleX+20)/40) //The term "bias" is used for weighings that account for head rotation in the hairline bezier curve
+        let bezierExtendLX = Math.max(headLeftPoint[0], headLeftPoint[0]+hairlineWidthOffset+ref.width/5)
+        let bezierExtendRX = Math.min(headRightPoint[0], headRightPoint[0]+hairlineWidthOffset-ref.width/5)
+
+        //The term "bias" is used for weighings that account for head rotation in the hairline bezier curve
+        //(changes the density of the generated bezier curve to favor points near start or end)
+        let hairlineBias = util.prop(0.15,0.85,(ref.angleX+20)/40) 
         hairlineBias = Math.min(1,Math.max(0,hairlineBias))
-        let topHairline = this.generate4PointBezier(headLeftPoint, [headLeftPoint[0]+hairlineWidthOffset,headLeftPoint[1]+hairlineHeightOffset], [headRightPoint[0]+hairlineWidthOffset,headRightPoint[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022", hairlinePointCount, hairlineBias)
-        hairlineHeightOffset += ref.height*(util.prop(0.6,0.9,ref.hairLength)) // adjust height = hair length
-        let bottomHairline = this.generate4PointBezier(headLeftPoint, [headLeftPoint[0]+hairlineWidthOffset,headLeftPoint[1]+hairlineHeightOffset], [headRightPoint[0]+hairlineWidthOffset,headRightPoint[1]+hairlineHeightOffset], ref.HEAD_RIGHT, "#00000022", hairlinePointCount, hairlineBias)
 
-        topHairline.draw(ctx, true)
-        bottomHairline.draw(ctx, true)
-
-        let bangLine = new Path("#000000")
-        let totalLengthTraversed = 0
+        //generate hairlines
+        let topHairline = this.generate4PointBezier(headLeftPoint, [bezierExtendLX,headLeftPoint[1]+hairlineHeightOffset], [bezierExtendRX,headRightPoint[1]+hairlineHeightOffset], headRightPoint, "#00000022", hairlinePointCount, hairlineBias)
+        hairlineHeightOffset += ref.height*(util.prop(0.2,0.4,ref.hairLength)) // adjust height = hair length
+        let flatHairline = this.generate4PointBezier(headLeftPoint, [bezierExtendLX,headLeftPoint[1]+hairlineHeightOffset], [bezierExtendRX,headRightPoint[1]+hairlineHeightOffset], headRightPoint, "#00000022", hairlinePointCount, hairlineBias)
+        hairlineHeightOffset += ref.height*(util.prop(0.2,0.4,ref.hairLength)) // adjust height = hair length
+        let bottomHairline = this.generate4PointBezier(headLeftPoint, [bezierExtendLX,headLeftPoint[1]+hairlineHeightOffset], [bezierExtendRX,headRightPoint[1]+hairlineHeightOffset], headRightPoint, "#00000022", hairlinePointCount, hairlineBias)
+ 
         let totalTopPoints = topHairline.points.length
         let totalBottomPoints = bottomHairline.points.length
-        let prevPoint = topHairline.points[0]
-        for(let i = 0; i < 3; i++){ //top hairline must be broken by an even amount of points
-            let convertRange = util.propC(0,1,ref.hairSegments[i]) //rarify very short and long segments
-            let p1 = Math.floor(totalTopPoints * convertRange**3)
-            convertRange = util.propC(0,1,ref.hairSegments[i+1])
-            let p2 = Math.floor(totalTopPoints * convertRange**3)
-            // console.log("total: " + totalTopPoints + " p1: " + p1 + " p2: " + p2)
-            if(totalLengthTraversed + p1 + p2 >= totalTopPoints){
-                break
-            }
+        let totalFlatPoints = flatHairline.points.length
 
-            for(let j = totalLengthTraversed; j < totalLengthTraversed + p1; j++){
-                // console.log("adding " + topHairline.points[j] + " max " + totalTopPoints + " cur " + j)
-                bangLine.addPoint(topHairline.points[j])
-                prevPoint = topHairline.points[j]
-            }
+        // topHairline.draw(ctx, true)
+        // flatHairline.draw(ctx, true)
+        // bottomHairline.draw(ctx, true)
 
-            let pointRatio = (totalLengthTraversed+p1+p2)/totalTopPoints
-            let nextBottomPoint = Math.floor(pointRatio*totalBottomPoints)
-            // console.log("adding anchor " + bottomHairline.points[nextBottomPoint])
-            
-            let lineToCenter = this.generateLineP(prevPoint, bottomHairline.points[nextBottomPoint])
-            bangLine.addPath(lineToCenter)
-            prevPoint = bottomHairline.points[nextBottomPoint]
+        // generate bangs based on hairline
+        let bangLine = new Path("#000000")
+        let flatBangMode = ref.isStraightBang <= 0.3
 
-            totalLengthTraversed += p1 + p2
+        // create an amount of top segments and give each an equal ratio
+        let topSegmentCount = Math.floor(util.propC(1.9,3.3,ref.topAnchorCount))+1
+        let avgDistribution = 1.0/topSegmentCount
+        let segments = Array(topSegmentCount).fill(avgDistribution);
+        // adjust the edge ratios equally by an amount
+        let edgeSegmentAdjust = util.propC(0.3,1.5,ref.hairMiscRand[4])
+        segments[0] *= edgeSegmentAdjust
+        segments[topSegmentCount-1] *= edgeSegmentAdjust
+        // randomly vary each segment's weight 
+        for(let i = 0; i < topSegmentCount; i++){
+            segments[i] *= util.propC(0.4,2,ref.hairMiscRand[i])
         }
-        let lineToEnd = this.generateLineP(prevPoint, topHairline.points[totalTopPoints-1])
-        bangLine.addPath(lineToEnd)
+        // recalculate segment ratios so everything adds up 1
+        let total = segments.reduce((a, b) => a + b, 0)
+        for(let i = 0; i < topSegmentCount; i++){
+            segments[i] /= total
+        }
+        for(let i = 1; i < topSegmentCount; i++){
+            segments[i] = segments[i-1]+segments[i]
+        }
+
+        //for each segment, generate a line
+        if(flatBangMode){
+            let segmentCount = 0 
+            for(let i = 0; i < totalFlatPoints; i++){
+                bangLine.addPoint(flatHairline.points[i])
+                if(segmentCount < segments.length-1 && i/(totalFlatPoints-1) >= segments[segmentCount]){
+                    if(segments[segmentCount] >= 0.1 && segments[segmentCount] <= 0.9){
+                        let verticalLineLength = ref.height * util.prop(0.1,0.3,ref.bangSegmentRand[segmentCount][0]) * util.prop(0.5,1,(-5-ref.angleY)/20)
+                        let verticalPoint = [flatHairline.points[i][0], flatHairline.points[i][1] - verticalLineLength]
+                        let line = this.generateLineP(flatHairline.points[i], verticalPoint)
+                        bangLine.addPath(line)
+                        line = this.generateLineP(verticalPoint, flatHairline.points[i])
+                        bangLine.addPath(line)
+                    }
+                    segmentCount += 1
+                }
+                bangLine.addPoint(flatHairline.points[i])
+            }
+        }else{
+            let prevPoint = topHairline.points[0]
+            for(let i = 0; i < topSegmentCount; i++){
+                let curPoint = topHairline.points[Math.floor(segments[i]*totalTopPoints-0.01)]
+                if(i == 0){ // special case for start and end
+                    let curvePoint = this.trianglePoint(prevPoint, curPoint, util.prop(-0.2,0,ref.bangEdgeCurves[0]))
+                    bangLine.addPath(this.generate3PointBezier(prevPoint, curvePoint, curPoint))
+                }else if(i == topSegmentCount-1){
+                    let curvePoint = this.trianglePoint(prevPoint, curPoint, util.prop(-0.2,0,ref.bangEdgeCurves[1]))
+                    bangLine.addPath(this.generate3PointBezier(prevPoint, curvePoint, curPoint))
+                }else{
+                    let hairType = Math.floor(util.prop(0, 3, ref.hairType[i]))
+                    if(hairType == 0 && segments[i]-segments[i-1] > 0.4){ //flat bang
+                        let midPointRatio1 = segments[i-1]+(segments[i]-segments[i-1])*util.prop(0.03,0.07,ref.bangSegmentRand[i][0])
+                        let midPointRatio2 = segments[i-1]+(segments[i]-segments[i-1])*util.prop(0.93,0.97,ref.bangSegmentRand[i][1])
+                        let midPoint1 = bottomHairline.points[Math.floor(midPointRatio1*totalBottomPoints-0.01)]
+                        let midPoint2 = bottomHairline.points[Math.floor(midPointRatio2*totalBottomPoints-0.01)]
+                        
+                        bangLine.addPath(this.generateLineP(prevPoint, midPoint1))
+                        bangLine.addPath(this.generateLineP(midPoint1, midPoint2))
+                        bangLine.addPath(this.generateLineP(midPoint2, curPoint))
+                    }else if(hairType == 1 || hairType == 2){ //left anchor left curl/right anchor right curl
+                        let curveDir = 1
+                        let anchorVar = util.prop(-0.05,0.1,ref.bangSegmentRand[i][0])
+                        let anchor = [1-anchorVar,0+anchorVar]
+                        if(hairType == 2){
+                            curveDir = -1
+                            anchor = [0+anchorVar,1-anchorVar]
+                        }
+                        let anchorRatio = Math.max(0, Math.min(0.99999, segments[i-1]*anchor[0] + segments[i]*anchor[1]))
+                        let midPoint = bottomHairline.points[Math.floor((anchorRatio)*totalBottomPoints-0.01)]
+                        let curvePoint = this.trianglePoint(prevPoint, midPoint, util.prop(0,-0.2,ref.bangSegmentRand[i][2])*curveDir)
+                        bangLine.addPath(this.generate3PointBezier(prevPoint, curvePoint, midPoint))
+                        curvePoint = this.trianglePoint(midPoint, curPoint, util.prop(0,0.2,ref.bangSegmentRand[i][3])*curveDir)
+                        bangLine.addPath(this.generate3PointBezier(midPoint, curvePoint, curPoint))
+                    }else{ //middle anchor puff
+                        let midPoint = bottomHairline.points[Math.floor((segments[i]+segments[i-1])/2*totalBottomPoints-0.01)]
+                        let curvePoint = this.trianglePoint(prevPoint, midPoint, util.prop(0,0.2,ref.bangSegmentRand[i][0]))
+                        bangLine.addPath(this.generate3PointBezier(prevPoint, curvePoint, midPoint))
+                        curvePoint = this.trianglePoint(midPoint, curPoint, util.prop(0,0.2,ref.bangSegmentRand[i][1]))
+                        bangLine.addPath(this.generate3PointBezier(midPoint, curvePoint, curPoint))
+                    }
+                }
+                prevPoint = curPoint
+            }
+        }
+        
+        
         return bangLine
     }
 
@@ -507,6 +603,24 @@ class Generator{
         allPaths.forEach(path => {
             path.smudgeArea(centerX, centerY, smudgeWidth, smudgeHeight, smudgeX, smudgeY, ctx)
         });
+    }
+
+    //given two points, find the third point that forms a triangle with the two points as the base of an isosceles triangle
+    //extension sets the distance from the third point to the base (proportional to length from p1 to p2)
+    //the third point is in the direction clockwise from the vector p1 to p2
+    trianglePoint(p1, p2, extension){
+        let distance = util.dist(p1, p2)
+        let dx = p2[0] - p1[0]
+        let dy = p2[1] - p1[1]
+        let baseX = dx/2 
+        let baseY = dy/2 
+        let angle = Math.atan2(dx,dy) - Math.PI/2
+        let extendLength = extension * distance
+
+        let finalX = p1[0] + baseX + Math.sin(angle) * extendLength
+        let finalY = p1[1] + baseY + Math.cos(angle) * extendLength
+
+        return [finalX, finalY]
     }
 }
 

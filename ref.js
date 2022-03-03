@@ -7,33 +7,78 @@ class Ref{
     //[X reference, Y reference, Z reference] (for sphere)
     //dim [220,180,220]
     //angle [-20,-5] 
-    constructor(cX, cY, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, ctx, faceSeed=Math.random()){
-        this.centerX = cX
-        this.centerY = cY
-        this.width = width
-        this.height = height
-        this.length = length 
-        this.angleX = angleX 
-        this.angleY = angleY 
-        this.eyeSeperation = eyeSeperation
-        // 1 = half of face's X len
-        this.eyeHeight = eyeHeight
-        // 1 = half of face's Y height
-        this.mouthHeight = mouthHeight
-        // 1 = half of face's Y height
-        //All of the seperation factor calculates from the point of the front of the face
+    // constructor(cX, cY, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, ctx, baseSeed=Math.random()){
+    //     this.util.seed(baseSeed)
+    //     this.centerX = cX
+    //     this.centerY = cY
+    //     this.width = width
+    //     this.height = height
+    //     this.length = length 
+    //     this.angleX = angleX 
+    //     this.angleY = angleY 
+    //     this.eyeSeperation = eyeSeperation
+    //     // 1 = half of face's X len
+    //     this.eyeHeight = eyeHeight
+    //     // 1 = half of face's Y height
+    //     this.mouthHeight = mouthHeight
+    //     // 1 = half of face's Y height
+    //     //All of the seperation factor calculates from the point of the front of the face
 
-        //other
+    //     //other
+    //     this.ctx = ctx
+    //     this.util = new Util(ctx)
+
+    //     this.setRandoms()
+    //     this.calculatePoints()
+    // }
+
+    constructor(cX=1000, cY=1000, baseSeed= Math.floor(Math.random()*100000), ctx=null){
+
+        //utilities
         this.ctx = ctx
         this.util = new Util(ctx)
+        this.baseSeed = baseSeed
 
-        this.setRandoms(faceSeed)
+        //basic stats
+        this.centerX = cX
+        this.centerY = cY
+
+        this.setAllSeededValues(this.baseSeed)
+    }
+
+    setAllSeededValues(seed){
+        this.util.seed("" + seed)
+        this.widthScale = this.util.prop(0.8,1.6,this.util.seededRand())
+
+        this.angleX = this.util.randRange(-20, 20)
+        this.angleY = this.util.randRange(-5, -25)
+
+        this.updateScale(200)
+
+        this.eyeSeperation = this.util.prop(0.3,0.9,this.util.seededRand())
+        // 1 = half of face's X len
+        this.eyeHeight = this.util.prop(-0.09,-0.03,this.util.seededRand())
+        // 1 = half of face's Y height
+        this.mouthHeight = this.util.prop(-0.40,-0.20,this.util.seededRand())
+        // 1 = half of face's Y height
+        //All of the seperation factor calculates from the point of the front of the face
+        let mouthType = 1
+        let eyeType = 1
+        let eyebrowType = 1
+
+        this.setRandoms()
         this.calculatePoints()
     }
 
-    setRandoms(faceSeed){
+    updateScale(scale){
+        this.scale = scale
+        this.width = this.widthScale*this.scale
+        this.height = this.scale
+        this.length = this.scale*(this.widthScale+1)/2
+    }
+
+    setRandoms(){
         //seed faceShapeRandom ytf
-        this.util.seed(faceSeed)
 
         //randomness references, other generation function may reference these
         this.eyeRand1 = this.util.seededRand()
@@ -49,7 +94,15 @@ class Ref{
         this.hairlineHeight = this.util.seededRand()
         this.hairLength = this.util.seededRand()
 
-        this.hairSegments = [this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand()]
+        this.isStraightBang = this.util.seededRand()
+        this.bangEdgeCurves = [this.util.seededRand(), this.util.seededRand()]
+        this.hairType = [this.util.seededRand(), this.util.seededRand(), this.util.seededRand()]
+        this.hairRand = [this.util.seededRand(), this.util.seededRand(), this.util.seededRand()]
+        this.bangSegmentRand = [[this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand()],
+                                [this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand()],
+                                [this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand()]]
+        this.hairMiscRand = [this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand(), this.util.seededRand()]
+        this.topAnchorCount = this.util.seededRand()
 
         this.faceVX = this.util.seededRand() //for shifting the face very slightly randomly
         this.faceVY = this.util.seededRand()
@@ -98,6 +151,9 @@ class Ref{
     }
 
     DrawRefPoints(){
+        if(ctx == null){
+            throw "trying to draw ref on ref without ctx!"
+        }
         this.util.dot(this.ctx, this.HEAD_RIGHT[0],this.HEAD_RIGHT[1]);
         this.util.dot(this.ctx, this.HEAD_LEFT[0],this.HEAD_LEFT[1]);
         this.util.dot(this.ctx, this.HEAD_TOP[0],this.HEAD_TOP[1]);

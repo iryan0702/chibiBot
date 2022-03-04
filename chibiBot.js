@@ -124,6 +124,7 @@ while(userInput != "exit" && userInput != "quit"){
         displayText += "[0/Default] Looking around:\n"
         displayText += "[1] Bouncing Chibi:\n"
         displayText += "[2] 40 Random Chibis:\n"
+        displayText += "[3] All Accessories:\n"
         displayText += "====="
     }else{
         console.log("Something went wrong! Please try again!")
@@ -220,6 +221,8 @@ while(userInput != "exit" && userInput != "quit"){
                 bounceAnimation(ref)
             }else if(value == 2){
                 randomChibiAnimation(40)
+            }else if(value == 3){
+                allAccessoriesAnimation(ref)
             }else{
                 lookingAroundAnimation(ref)
             }
@@ -344,21 +347,32 @@ function zoomWoah(relX, ref, squish, baseWidth, baseHeight, nextFileName, fileNa
     ref.centerY = util.prop(1800, 1000, rel)
     ref.eyeStyle = 101
     ref.mouthStyle = 5
-    ref.width = util.prop(220, 880, rel)
-    ref.height = util.prop(200, 800, rel)
-    ref.length = util.prop(220, 880, rel)
+    ref.updateScale(util.prop(200, 800, rel))
     let imageFileName = create(ref, nextFileName)
     fileNames.push(imageFileName)
 }
 
 //////
-//
+// code for random chibi animation
 //////
 function randomChibiAnimation(amount){
     fileNames = []
     for(let i = 0; i < amount; i++){
         let newRef = new Ref(1000, 1000)
         fileNames.push(create(newRef, i))
+    }
+    renderGif(fileNames, 50)
+}
+
+//////
+// code for testing all accessories
+//////
+function allAccessoriesAnimation(ref){
+    fileNames = []
+    for(let i = 0; i < ref.allAccessories.length; i++){
+        ref.accessories = []
+        ref.accessories.push(ref.allAccessories[i])
+        fileNames.push(create(ref, i))
     }
     renderGif(fileNames, 50)
 }

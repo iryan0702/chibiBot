@@ -4,40 +4,16 @@
 const{Util} = require("./util.js") 
 
 class Ref{
-    //[X reference, Y reference, Z reference] (for sphere)
-    //dim [220,180,220]
-    //angle [-20,-5] 
-    // constructor(cX, cY, width, height, length, angleX, angleY, eyeSeperation, eyeHeight, mouthHeight, ctx, baseSeed=Math.random()){
-    //     this.util.seed(baseSeed)
-    //     this.centerX = cX
-    //     this.centerY = cY
-    //     this.width = width
-    //     this.height = height
-    //     this.length = length 
-    //     this.angleX = angleX 
-    //     this.angleY = angleY 
-    //     this.eyeSeperation = eyeSeperation
-    //     // 1 = half of face's X len
-    //     this.eyeHeight = eyeHeight
-    //     // 1 = half of face's Y height
-    //     this.mouthHeight = mouthHeight
-    //     // 1 = half of face's Y height
-    //     //All of the seperation factor calculates from the point of the front of the face
-
-    //     //other
-    //     this.ctx = ctx
-    //     this.util = new Util(ctx)
-
-    //     this.setRandoms()
-    //     this.calculatePoints()
-    // }
-
     constructor(cX=1000, cY=1000, baseSeed= Math.floor(Math.random()*1000000), ctx=null){
 
         //utilities
         this.ctx = ctx
         this.util = new Util(ctx)
         this.baseSeed = baseSeed
+
+        this.allAccessories = [100,101,102,200,201,202,300,301,302,303,304,305,306,400,401,402,403,404,405,406,407,408,409,410,500,501,502,503,504,505,506,507,508] 
+        this.allEyes = [0,1,2,3,4,5,6,7,8,9,10,100,101,102,103,104,105,106]
+        this.allMouths = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,100,101,102,103,104,105]
 
         //basic stats
         this.centerX = cX
@@ -71,9 +47,6 @@ class Ref{
         this.mouthHeight = this.util.prop(-0.40,-0.20,this.util.seededRand())
         // 1 = half of face's Y height
         //All of the seperation factor calculates from the point of the front of the face
-        this.allAccessories = [100,101,102,200,201,202,300,301,302,303,304,305,306,400,401,402,403,404,405,406,407,408,409,410,500,501,502,503,504,505,506,507,508] 
-        this.allEyes = [0,1,2,3,4,5,6,7,8,9,10,100,101,102,103,104,105,106]
-        this.allMouths = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,100,101,102,103,104,105]
 
         this.mouthStyle = this.allMouths[Math.floor(this.util.prop(0,this.allMouths.length,this.util.seededRand()))]
         this.eyeStyle = this.allEyes[Math.floor(this.util.prop(0,this.allEyes.length,this.util.seededRand()))]

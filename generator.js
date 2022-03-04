@@ -177,6 +177,10 @@ class Generator{
         return curvePath
     }
 
+
+
+
+    
     /////
     //complex path generations: these generations take in a Ref object to form the shapes for the chibi
     /////

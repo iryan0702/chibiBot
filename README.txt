@@ -1,5 +1,7 @@
-Before executing the program, a node modules need to be installed with:
-`npm install canvas`
+Before executing the program, node modules may need to be installed with:
+`npm install canvas` – canvas module for all the drawing
+`npm install prompt-sync` – module for user input through terminal
+(missing dependencies may differ on different computers, most should be resolved with `npm install [missing module name]`)
 
 
 The program can then be run using node.js using the command:

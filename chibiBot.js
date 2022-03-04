@@ -1,3 +1,9 @@
+// The main program which acts as the interface between the user and the framework
+// In order: 
+// Contains the collection of steps required to generate one image of a chibi
+// Contains the logic to process user input to customize a chibi
+// Contains several animation functions to generate an animation based on a chibi
+
 // import
 const{Path} = require("./path.js") 
 const{Util} = require("./util.js") 
@@ -12,7 +18,7 @@ const canvasHeight = 2000;
 const gen = new Generator()
 const util = new Util()
 
-//given a ref, create an image with a given file name
+//given a ref, create a chibi of it with a given file name
 function create(ref, fileName, outputToMainDirectory = false){
     ref.updatePoints()
     //create
@@ -86,9 +92,10 @@ validEyeValues = []
 // saved ref
 let ref = new Ref(1000, 1000)
 
+// begin user input:
 while(userInput != "exit" && userInput != "quit"){
     displayText = ""
-    if(mode == "creation"){
+    if(mode == "creation"){ //define user prompt based on current page
         if(firstPrompt){
             displayText += "Welcome to chibiBot.js!" + "\n"
             displayText += "The following is a random chibi:" + "\n"
@@ -130,9 +137,11 @@ while(userInput != "exit" && userInput != "quit"){
         console.log("Something went wrong! Please try again!")
         break;
     }
+
     console.log(displayText)
     userInput = prompt("> Input: ");
 
+    // process userinput based on page and input value
     args = userInput.split(" ")
     if(args.length == 1 && args[0] == ''){ //empty input, move to next page or create
         if(mode == "creation"){
@@ -146,7 +155,7 @@ while(userInput != "exit" && userInput != "quit"){
         }
     }else{
         category = parseInt(args[0]) 
-        if(mode == "creation"){
+        if(mode == "creation"){ //creation values
             if(category == 0){
                 value = parseFloat(args[1]) 
                 ref.widthScale = Math.max(0.8, Math.min(1.6, value))
@@ -167,11 +176,11 @@ while(userInput != "exit" && userInput != "quit"){
                 value = args[1]
                 ref.faceColor = value
             }else if(category == 6){
-                value = parseFloat(args[1]) 
+                value = parseFloat(args[1])  //take seed and update
                 ref.baseSeed = Math.floor(Math.max(0, Math.min(999999, value)))
                 ref.setAllSeededValues(ref.baseSeed)
             }
-        }else if(mode == "pose"){
+        }else if(mode == "pose"){ //pose values
             if(category == 0){
                 value = parseInt(args[1]) 
                 bigPresetList = [ 
@@ -193,7 +202,7 @@ while(userInput != "exit" && userInput != "quit"){
             }else if(category == 2){
                 value = parseInt(args[1]) 
                 ref.eyeStyle = value
-            }else if(category == 3){
+            }else if(category == 3){ //accessories addition or clearing
                 value = parseInt(args[1]) 
                 if(value == -1){
                     ref.accessories = []
@@ -213,7 +222,7 @@ while(userInput != "exit" && userInput != "quit"){
             }else if(category == 7){
                 mode = "animation"
             }
-        }else if(mode == "animation"){
+        }else if(mode == "animation"){ // choose an animation
             value = parseInt(args[0])
             if(value == 0){
                 lookingAroundAnimation(ref)

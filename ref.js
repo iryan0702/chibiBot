@@ -11,7 +11,8 @@ class Ref{
         this.util = new Util(ctx)
         this.baseSeed = baseSeed
 
-        this.allAccessories = [100,101,102,200,201,202,300,301,302,303,304,305,306,400,401,402,403,404,405,406,407,408,409,410,500,501,502,503,504,505,506,507,508] 
+        // list of available options [101 - angry shadow temporarily disabled for later layering fixes]
+        this.allAccessories = [100,102,200,201,202,300,301,302,303,304,305,306,400,401,402,403,404,405,406,407,408,409,410,500,501,502,503,504,505,506,507,508] 
         this.allEyes = [0,1,2,3,4,5,6,7,8,9,10,100,101,102,103,104,105,106]
         this.allMouths = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,100,101,102,103,104,105]
 

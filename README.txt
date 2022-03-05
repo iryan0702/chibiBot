@@ -70,7 +70,6 @@ Mouths:
 Accessories (combine category number + id number):
 [1xx] Shade Overlay
 0 	Blush Oval
-1 	Angry Shadow
 2 	Eyebags
 [2xx] Face Paint
 0 	Rambo Marks

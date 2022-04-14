@@ -50,6 +50,7 @@ function create(ref, fileName, outputToMainDirectory = false){
     let bangPath = gen.generateHairBangs(ref, leftRef, rightRef, ctx)
     bangPath.reversePath()
     hairPath.addPath(bangPath)
+    hairPath.addPoint(hairPath.points[0])
 
     hairPath.setFillStyle(ref.hairColor)
     hairPath.addNoise(2,2)

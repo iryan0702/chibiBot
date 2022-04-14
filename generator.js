@@ -196,7 +196,9 @@ class Generator{
         let hairPath = this.generatePartialOval(ref.centerX, ref.centerY, ref.width*1.04, ref.height*1.04, 180, 360, roundedness, "#222222")//, "#faeacf")
 
         //generate a line to keep track of left and right head reference points
-        let headLRRef = this.generateLineP(ref.HEAD_LEFT, ref.HEAD_RIGHT)
+        let hairRefHeightOffset = ref.height/7.5 * util.prop(0, 1, (ref.angleY+5.)/-20)
+        let hairRefWidthOffset = ref.width/25.
+        let headLRRef = this.generateLine(ref.HEAD_LEFT[0]-hairRefWidthOffset, ref.HEAD_LEFT[1]+hairRefHeightOffset, ref.HEAD_RIGHT[0]+hairRefWidthOffset, ref.HEAD_RIGHT[1]+hairRefHeightOffset)
 
         //chin smudge params (L): Drag edges of face downwards to form a chin shape
         let centerX = ref.HEAD_LEFT[0]
@@ -258,7 +260,8 @@ class Generator{
     generateHairBangs(ref, headLeftPoint, headRightPoint, ctx=null){
         //generate hairlines: general offset and fixed point count
         let hairlineWidthOffset = ref.width/120 * ref.angleX * -1
-        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.75) * util.prop(1,1.4,ref.hairlineHeight) // first height = hairline height/forehead size
+        let hairlineHeightOffset = (-ref.height) * (1 - (ref.angleY/-25)*0.50) * util.prop(1,1.4,ref.hairlineHeight) // first height = hairline height/forehead size
+        // hairlineHeightOffset *= 0.75 //attempt to reduce offset scale
         let hairlinePointCount = Math.floor(ref.width/200*40 + ref.height/200*10)
         let bezierExtendLX = Math.max(headLeftPoint[0], headLeftPoint[0]+hairlineWidthOffset+ref.width/5)
         let bezierExtendRX = Math.min(headRightPoint[0], headRightPoint[0]+hairlineWidthOffset-ref.width/5)
@@ -372,7 +375,6 @@ class Generator{
                 prevPoint = curPoint
             }
         }
-        
         
         return bangLine
     }

@@ -141,7 +141,7 @@ class Ref{
 
         // face angle adjustments for eyes and mouth
         let xAngleAdjustment = this.angleX*1.2
-        let yAngleAdjustment = this.angleY*this.height/200*1.1+(this.width/200*15)
+        let yAngleAdjustment = this.angleY*this.height/300+(this.width/200*15)
 
 
         //Compensate for the angle and the dist. betweem eyes

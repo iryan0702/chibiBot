@@ -7,6 +7,7 @@ var util = new Util()
 
 class Path{
     points = [] //private path variable to store path
+    circular = false
 
     constructor(strokeStyle = "#000000", fillStyle="none"){
         this.strokeStyle = strokeStyle
@@ -92,9 +93,15 @@ class Path{
             util.varyPoint(point, xVar, yVar)
         })
     }
-    
-    // make each point the average of the current point and next point
+
+    // explicitly mark shape as circular
+    makeCircular(){
+        this.circular = true
+    }
+    // make each point the average of the previous, current, and next point (first and last point unmoved)
+    // if the path is marked circular, the first and last point is also averaged accordingly
     smoothPoints(circularSmooth = false){
+        let circular = this.circular || circularSmooth
         let prev = this.points[0]
         for(let i = 1; i < this.points.length-1; i++){
             let tempCur = [this.points[i][0],this.points[i][1]]
@@ -102,6 +109,18 @@ class Path{
             this.points[i][0] = (prev[0] + tempCur[0] + next[0])/3
             this.points[i][1] = (prev[1] + tempCur[1] + next[1])/3
             prev = tempCur
+        }
+
+        if(circular && this.points.length > 2){
+            let l = this.points.length
+            let p2 = this.points[1]
+            let p1 = this.points[0] //first point
+            let p9 = this.points[l-1] //last point
+            let p8 = this.points[l-2]
+            this.points[0][0] = (p2[0] + p1[0] + p9[0])/3
+            this.points[0][1] = (p2[1] + p1[1] + p9[1])/3
+            this.points[l-1][0] = (p1[0] + p9[0] + p8[0])/3
+            this.points[l-1][1] = (p1[1] + p9[1] + p8[1])/3
         }
     }
 

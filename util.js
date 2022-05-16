@@ -49,6 +49,18 @@ class Util{
         return start+(end-start)*realProportion
     }
 
+    //given the value of two parent values, and the chance for p1 to be inherited/chance for p1+p2 to be fused, (p2 inherit chance inferred)
+    //return the value the son receives
+    randInherit(p1Val, p2Val, p1Chance, fuseChance){
+        let rand = this.seededRand()
+        if(rand <= p1Chance){
+            return p1Val
+        }else if(rand <= p1Chance + fuseChance){
+            return (p1Val+p2Val)/2
+        }
+        return p2Val
+    }
+
     //distance
     dist(p1, p2){
         return Math.sqrt((p1[0]-p2[0])**2+(p1[1]-p2[1])**2)

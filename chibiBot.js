@@ -10,6 +10,7 @@ const{Util} = require("./util.js")
 const{Ref} = require("./ref.js") 
 const{Generator} = require("./generator.js") 
 const{createCanvas} = require('canvas')
+var fs = require('fs');
 
 //constants
 radian = Math.PI / 180   // radian conversion
@@ -19,7 +20,7 @@ const gen = new Generator()
 const util = new Util()
 
 //given a ref, create a chibi of it with a given file name
-function create(ref, fileName, outputToMainDirectory = false){
+function create(ref, fileName, outputToMainDirectory = false, outputToFusionDirectory = false){
     ref.updatePoints()
     //create
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -30,7 +31,7 @@ function create(ref, fileName, outputToMainDirectory = false){
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     
     //Brush style
-    brushWidth = 20;
+    brushWidth = 25;
     ctx.lineWidth = brushWidth;
     ctx.lineCap = 'round';
 
@@ -73,6 +74,9 @@ function create(ref, fileName, outputToMainDirectory = false){
     if(outputToMainDirectory){
         outFileName = `./${fileName}.png`
     }
+    if(outputToFusionDirectory){
+        outFileName = "./fusion/" + fileName + ".png"
+    }
     fs.writeFileSync(outFileName, buffer);
 
     console.log("created " + outFileName)
@@ -92,6 +96,11 @@ validMouthValues = []
 validEyeValues = []
 // saved ref
 let ref = new Ref(1000, 1000)
+
+// fuse test
+fuseChibis = []
+canFuse = []
+fusionsRemaining = 15
 
 // begin user input:
 while(userInput != "exit" && userInput != "quit"){
@@ -124,6 +133,7 @@ while(userInput != "exit" && userInput != "quit"){
         displayText += "[5] X Angle:\t\t" + ref.angleX + "\n"
         displayText += "[6] Y Angle:\t\t" + ref.angleY + "\n"
         displayText += "Or [7] to choose a preset animation!" + "\n"
+        displayText += "Or [8] to play fuse mode!" + "\n"
         displayText += "=====" + "\n"
         displayText += "Enter a category number and a value to adjust any value, (e.g. '4 138')" + "\n"
         displayText += "or enter nothing to create an image of your chibi!:"
@@ -133,7 +143,10 @@ while(userInput != "exit" && userInput != "quit"){
         displayText += "[1] Bouncing Chibi:\n"
         displayText += "[2] 40 Random Chibis:\n"
         displayText += "[3] All Accessories:\n"
+        displayText += "[4] Fuse Test:\n"
         displayText += "====="
+    }else if(mode == "fuse"){
+        displayText += "Give the number of any two chibis to fuse them!"
     }else{
         console.log("Something went wrong! Please try again!")
         break;
@@ -222,6 +235,16 @@ while(userInput != "exit" && userInput != "quit"){
                 ref.angleY = Math.max(-25, Math.min(-5, value))
             }else if(category == 7){
                 mode = "animation"
+            }else if(category == 8){
+                mode = "fuse"
+
+                console.log("Initializing 16 Chibis!")
+                for(let i = 0; i < 16; i++){
+                    fuseChibis.push(new Ref(1000, 1000))
+                    fuseChibis[i].updateScale(400)
+                    create(fuseChibis[i], i, false, true)
+                    canFuse.push(i)
+                }
             }
         }else if(mode == "animation"){ // choose an animation
             value = parseInt(args[0])
@@ -233,15 +256,40 @@ while(userInput != "exit" && userInput != "quit"){
                 randomChibiAnimation(40)
             }else if(value == 3){
                 allAccessoriesAnimation(ref)
+            }else if(value == 4){
+                fuseTest(ref)
             }else{
                 lookingAroundAnimation(ref)
             }
             break;
+        }else if(mode == "fuse"){
+            fusionsRemaining -= 1
+
+            fuse1 = parseInt(args[0])
+            fuse2 = parseInt(args[1])
+
+            //fuse chibis in random direction to ensure that there is absolutely no bias
+            if(Math.random() < 0.5){
+                fuseChibis[fuse1].fuse(fuseChibis[fuse2])
+            }else{
+                fuseChibis[fuse2].fuse(fuseChibis[fuse1])
+                fuseChibis[fuse1] = fuseChibis[fuse2]
+            }
+
+            fuseChibis[fuse1].updateScale(400)
+            create(fuseChibis[fuse1], fuse1, false, true)
+
+            let fileName  = "./fusion/" + fuse2 + ".png"
+            fs.openSync(fileName, 'r');
+            fs.unlinkSync(fileName);
+            
+            if(fusionsRemaining == 0){
+                break
+            }
         }
     }
     console.log("=====")
 }
-
 
 //////
 //code for animation: looking around
@@ -379,12 +427,43 @@ function randomChibiAnimation(amount){
 //////
 function allAccessoriesAnimation(ref){
     fileNames = []
+    let acc = 0
     for(let i = 0; i < ref.allAccessories.length; i++){
         ref.accessories = []
         ref.accessories.push(ref.allAccessories[i])
-        fileNames.push(create(ref, i))
+        fileNames.push(create(ref, acc))
+        acc += 1
+    }
+    ref.accessories = []
+    for(let i = 0; i < ref.allEyes.length; i++){
+        ref.eyeStyle = ref.allEyes[i]
+        fileNames.push(create(ref, acc))
+        acc += 1
+    }
+    ref.eyeStyle = 0
+    for(let i = 0; i < ref.allMouths.length; i++){
+        ref.mouthStyle = ref.allMouths[i]
+        fileNames.push(create(ref, acc))
+        acc += 1
     }
     renderGif(fileNames, 50)
+}
+
+//////
+// code for testing all accessories
+//////
+
+function fuseTest(ref){
+    fileNames = []
+
+    let ref2 = new Ref(1000, 1000)
+    fileNames.push(create(ref, 0))
+    fileNames.push(create(ref2, 1))
+
+    ref.fuse(ref2)
+    fileNames.push(create(ref, 2))
+
+    renderGif(fileNames, 200)
 }
 
 ////

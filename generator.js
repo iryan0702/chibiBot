@@ -54,6 +54,7 @@ class Generator{
     //good protrusion for a face shape is 0.05
     generateOval(centerX, centerY, radiusX, radiusY, protrusion=0, strokeStyle="#000000", fillStyle="none"){
         let facePath = new Path(strokeStyle, fillStyle)
+        facePath.makeCircular()
         let numPoints = Math.floor(((radiusX+radiusY)*3.1415)/10)+4
         let degreePerStep = 360/(numPoints-1)
         let dg = (numPoints-1)/8 //number of points before each diagonal is reached
@@ -68,6 +69,7 @@ class Generator{
 
     generateOvalWonky(centerX, centerY, radiusX, radiusY, protrusion=0, strokeStyle="#000000", fillStyle="none"){
         let facePath = new Path(strokeStyle, fillStyle)
+        facePath.makeCircular()
         let numPoints = Math.floor(((radiusX+radiusY)*3.1415)/10)+4
         let degreePerStep = 360/(numPoints-1)
         let dg = (numPoints-1)/14 
@@ -286,12 +288,19 @@ class Generator{
         // flatHairline.draw(ctx, true)
         // bottomHairline.draw(ctx, true)
 
+        // Top hair anchor generation:
+        // - First, decide how many top segments are going to be generated
+        // - Then split the value of 1 over each segment
+        // - Then randomly adjust the value of edge-most segments by the same random weight
+        // - Then randomly adjust the value of all segments by random weights
+        // - Then reweight all segments to total 1
+
         // generate bangs based on hairline
         let bangLine = new Path("#000000")
-        let flatBangMode = ref.isStraightBang <= 0.3
+        let flatBangMode = ref.isStraightBang <= 0.25
 
         // create an amount of top segments and give each an equal ratio
-        let topSegmentCount = Math.floor(util.propC(1.9,3.3,ref.topAnchorCount))+1
+        let topSegmentCount = Math.floor(util.propC(1.8,3.35,ref.topAnchorCount))+1
         let avgDistribution = 1.0/topSegmentCount
         let segments = Array(topSegmentCount).fill(avgDistribution);
         // adjust the edge ratios equally by an amount
@@ -300,13 +309,14 @@ class Generator{
         segments[topSegmentCount-1] *= edgeSegmentAdjust
         // randomly vary each segment's weight 
         for(let i = 0; i < topSegmentCount; i++){
-            segments[i] *= util.propC(0.4,2,ref.hairMiscRand[i])
+            segments[i] *= util.propC(0.5,2,ref.hairMiscRand[i])
         }
         // recalculate segment ratios so everything adds up 1
         let total = segments.reduce((a, b) => a + b, 0)
         for(let i = 0; i < topSegmentCount; i++){
             segments[i] /= total
         }
+
         for(let i = 1; i < topSegmentCount; i++){
             segments[i] = segments[i-1]+segments[i]
         }
@@ -589,8 +599,8 @@ class Generator{
 
             case 100:{ //Plus sign
                 let lineLen = ref.width/2.8*RNG1
-                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#ffffff"))
-                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#ffffff"))
+                facePaths.push(this.generateOval(ref.leftEye[0],ref.leftEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#222222"))
+                facePaths.push(this.generateOval(ref.rightEye[0],ref.rightEye[1],ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,-1,"#222222", "#222222"))
                 break
             }case 101:{ //Star
                 let lineLen = ref.width*RNG1
@@ -616,22 +626,33 @@ class Generator{
             }case 104:{ //Angy Boll
                 let lineLen = ref.width/3.8*RNG1
                 let eyeVert = ref.height/4.3*RNG2
-                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1],lineLen/2,eyeVert/1.1,-60,150,0.2,"#000000", "#BB5555"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1],lineLen/2,eyeVert/1.1,30,240,0.2,"#000000", "#BB5555"))
-                facePaths.push(this.generateLine(ref.leftEye[0]-lineLen/2,ref.leftEye[1]+0.2*eyeVert,ref.leftEye[0],ref.leftEye[1]-0.8*eyeVert))
-                facePaths.push(this.generateLine(ref.rightEye[0]+lineLen/2,ref.rightEye[1]+0.2*eyeVert,ref.rightEye[0],ref.rightEye[1]-0.8*eyeVert))
+                let leftAngy = this.generatePartialOval(ref.leftEye[0],ref.leftEye[1],lineLen/2,eyeVert/1.1,-60,150,0.2,"#000000", "#BB5555")
+                leftAngy.addPath(this.generateLine(ref.leftEye[0]-lineLen/2,ref.leftEye[1]+0.2*eyeVert,ref.leftEye[0],ref.leftEye[1]-0.8*eyeVert))
+                leftAngy.addPoint(leftAngy.points[0])
+
+                let rightAngy = this.generatePartialOval(ref.rightEye[0],ref.rightEye[1],lineLen/2,eyeVert/1.1,30,240,0.2,"#000000", "#BB5555")
+                rightAngy.addPath(this.generateLine(ref.rightEye[0],ref.rightEye[1]-0.8*eyeVert,ref.rightEye[0]+lineLen/2,ref.rightEye[1]+0.2*eyeVert)) //reverse order to fit mirrored side
+                rightAngy.addPoint(rightAngy.points[0])
+                
+                facePaths.push(leftAngy)
+                facePaths.push(rightAngy)
                 break
             }case 105:{ //hearts
                 let lineLen = ref.width/3*RNG1
                 let eyeVert = ref.height/4.3*RNG2
-                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.8,eyeVert/0.9,-30,210,-0.2,"#00000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+eyeVert/3.5,lineLen/1.8,eyeVert/0.9,-30,210,-0.2,"#00000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,0,180,-0.2,"#000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,0,180,-0.2,"#000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]+lineLen/3.5,ref.leftEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,210,360,0.2,"#000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+lineLen/3.5,ref.rightEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,210,360,0.2,"#000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-lineLen/3.5,ref.leftEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,180,330,0.2,"#000000", "#EEBBBB"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]-lineLen/3.5,ref.rightEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,180,330,0.2,"#000000", "#EEBBBB"))
+
+                let leftEyePath = this.generatePartialOval(ref.leftEye[0]-lineLen/3.5,ref.leftEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,180,330,0.2,"#000000", "#EEBBBB")
+                leftEyePath.addPath(this.generatePartialOval(ref.leftEye[0]+lineLen/3.5,ref.leftEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,210,360,0.2,"#000000"))
+                leftEyePath.addPath(this.generatePartialOval(ref.leftEye[0],ref.leftEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,10,170,-0.2,"#000000"))
+                leftEyePath.addPoint(leftEyePath.points[0])
+                facePaths.push(leftEyePath)
+
+                let rightEyePath = this.generatePartialOval(ref.rightEye[0]-lineLen/3.5,ref.rightEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,180,330,0.2,"#000000", "#EEBBBB")
+                rightEyePath.addPath(this.generatePartialOval(ref.rightEye[0]+lineLen/3.5,ref.rightEye[1]+eyeVert/2.5,lineLen/4,eyeVert/2,210,360,0.2,"#000000", "#EEBBBB"))
+                rightEyePath.addPath(this.generatePartialOval(ref.rightEye[0],ref.rightEye[1]+eyeVert/3.5,lineLen/1.7,eyeVert/0.9,10,170,-0.2,"#000000", "#EEBBBB"))
+                rightEyePath.addPoint(rightEyePath.points[0])
+                facePaths.push(rightEyePath)
+
                 break
             }case 106:{ //Bouta Cry
                 facePaths.push(this.generateOvalWonky(ref.leftEye[0],ref.leftEye[1], ref.height/4, ref.height/4,-0.44,"#222222", "#BBCCFF"))
@@ -805,10 +826,22 @@ class Generator{
                 let hatHeight = ref.height/1.1*RNG2
                 let brimWidth = ref.width/1.2*RNG3
                 let brimHeight = ref.width/3.8*RNG4
-                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight/2,brimWidth/2,hatHeight/2,-0,360,0.4,"#00000000","#444444"))
-                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height,brimWidth,brimHeight,-60,240,0,"#000000","#444444"))
-                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-brimHeight/2.5,brimWidth/2,brimHeight/2,-0,180,0,"#000000","#444444"))
+
+                // facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight/2,brimWidth/2,hatHeight/2,-0,360,0.4,"#00000000","#444444"))
+                
+                // base color
+                let baseRectangle = this.generateLine(ref.centerX-brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX-brimWidth/2,ref.centerY-ref.height-hatHeight, "#000000")
+                baseRectangle.addPath(this.generateLine(ref.centerX+brimWidth/2,ref.centerY-ref.height-hatHeight,ref.centerX+brimWidth/2,ref.centerY-ref.height-brimHeight/2.5))
+                baseRectangle.setFillStyle("#444444")
+                facePaths.push(baseRectangle)
+
+                //top circle
                 facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-hatHeight,brimWidth/2,brimHeight/2,-0,360,0,"#000000","#444444"))
+                //bottom outer rim
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height,brimWidth,brimHeight,-60,240,0,"#000000","#444444"))
+                //bottom inner rim
+                facePaths.push(this.generatePartialOval(ref.centerX,ref.centerY-ref.height-brimHeight/2.5,brimWidth/2,brimHeight/2,-0,180,0,"#000000","#444444"))
+                //sides
                 facePaths.push(this.generateLine(ref.centerX-brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX-brimWidth/2,ref.centerY-ref.height-hatHeight))
                 facePaths.push(this.generateLine(ref.centerX+brimWidth/2,ref.centerY-ref.height-brimHeight/2.5,ref.centerX+brimWidth/2,ref.centerY-ref.height-hatHeight))
                 break
@@ -1016,10 +1049,19 @@ class Generator{
             }case 6:{//avaitor
                 let glassSize = ref.width/3.1*RNG1
                 let glassCenterPull = ref.width/17*RNG1
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.8,0,180,0,"#999999","#224444AA"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.8,0,180,0,"#999999","#224444AA"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.5,180,360,0.22,"#999999","#224444AA"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.5,180,360,0.22,"#999999","#224444AA"))
+
+                let leftGlass = this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.8,0,180,0,"#999999","#224444AA")
+                leftGlass.addPath(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.5,180,360,0.15,"#999999","#224444AA"))
+                leftGlass.addPoint(leftGlass.points[0])
+                leftGlass.makeCircular()
+                facePaths.push(leftGlass)
+
+                let rightGlass = this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.8,0,180,0,"#999999","#224444AA")
+                rightGlass.addPath(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.5,180,360,0.15,"#999999","#224444AA"))
+                rightGlass.addPoint(rightGlass.points[0])
+                rightGlass.makeCircular()
+                facePaths.push(rightGlass)
+
                 facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
                                                          [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
                                                          [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
@@ -1028,12 +1070,21 @@ class Generator{
             }case 7:{//meme sunglass
                 let glassSize = ref.width/3.1*RNG1
                 let glassCenterPull = ref.width/17*RNG1
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.6,0,180,0.1,"#111111","#222222DD"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.6,0,180,0.1,"#111111","#222222DD"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize/1.3,glassSize/1.3*0.6,15,70,0.1,"#EEEEEEDD","none"))
+
+                let leftGlass = this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.6,0,180,0.1,"#111111","#222222DD")
+                leftGlass.addPath(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.2,180,360,0.13,"#111111","#222222DD"))
+                leftGlass.addPoint(leftGlass.points[0])
+                leftGlass.makeCircular()
+                facePaths.push(leftGlass)
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize/1.3,glassSize/1.3*0.6,15,70,0.1,"#EEEEEEDD","none")) //shine
+
+                let rightGlass = this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.6,0,180,0.1,"#111111","#222222DD")
+                rightGlass.addPath(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.2,180,360,0.13,"#111111","#222222DD"))
+                rightGlass.addPoint(rightGlass.points[0])
+                rightGlass.makeCircular()
+                facePaths.push(rightGlass)
                 facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize/1.3,glassSize/1.3*0.6,15,70,0.1,"#EEEEEEDD","none"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1],glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1],glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
+
                 facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
                                                          [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
                                                          [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
@@ -1042,12 +1093,22 @@ class Generator{
             }case 8:{//beeg sunglass
                 let glassSize = ref.width/3.1*RNG1
                 let glassCenterPull = ref.width/17*RNG1
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize,glassSize,0,180,0.12,"#111111","#222222DD"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize,glassSize,0,180,0.12,"#111111","#222222DD"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize/1.3,glassSize/1.3,15,70,0.12,"#EEEEEEDD","none"))
+
+                let leftGlass = this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize,glassSize,0,180,0.12,"#111111","#222222DD")
+                leftGlass.addPath(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize,glassSize*0.2,180,360,0.15,"#111111","#222222DD"))
+                leftGlass.addPoint(leftGlass.points[0])
+                leftGlass.makeCircular()
+                facePaths.push(leftGlass)
+                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize/1.3,glassSize/1.3,15,70,0.12,"#EEEEEEDD","none")) //shine
+
+                let rightGlass = this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize,glassSize,0,180,0.12,"#111111","#222222DD")
+                rightGlass.addPath(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize,glassSize*0.2,180,360,0.15,"#111111","#222222DD"))
+                rightGlass.addPoint(rightGlass.points[0])
+                rightGlass.makeCircular()
+                facePaths.push(rightGlass)
                 facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize/1.3,glassSize/1.3,15,70,0.12,"#EEEEEEDD","none"))
-                facePaths.push(this.generatePartialOval(ref.leftEye[0]-glassCenterPull,ref.leftEye[1]-glassSize/3,glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
-                facePaths.push(this.generatePartialOval(ref.rightEye[0]+glassCenterPull,ref.rightEye[1]-glassSize/3,glassSize,glassSize*0.2,180,360,0.3,"#111111","#222222DD"))
+
+                //holder
                 facePaths.push(this.generate4PointBezier([ref.leftEye[0]-glassCenterPull-glassSize,ref.leftEye[1]],
                                                          [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],
                                                          [(ref.leftEye[0]+ref.rightEye[0])/2,ref.leftEye[1]-glassSize/3.5],

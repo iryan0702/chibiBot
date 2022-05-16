@@ -154,6 +154,7 @@ class Ref{
         this.mouth = [this.face[0],(this.face[1]-this.mouthHeight*this.height)+yAngleAdjustment]
     }
 
+    // hex conversion methods courtesy of https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
     componentToHex(c) {
         var hex = c.toString(16);
         return hex.length == 1 ? "0" + hex : hex;
@@ -161,6 +162,15 @@ class Ref{
       
     rgbToHex(r, g, b) {
         return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+    }
+
+    hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : null;
     }
 
     DrawRefPoints(){
@@ -174,6 +184,87 @@ class Ref{
         this.util.dot(this.ctx, this.HEAD_CENTER[0],this.HEAD_CENTER[1]);                        //Center point
         this.util.dot(this.ctx, this.HEAD_FRONT[0],this.HEAD_FRONT[1]);  //Back head point
         this.util.dot(this.ctx, this.HEAD_BACK[0],this.HEAD_BACK[1]);  //Front face point
+    }
+
+    // fuse the traits of this chibi with another, randomly selecting or averaging traits from each parent
+    fuse(ref2){
+        this.baseSeed = this.baseSeed + "." + ref2.baseSeed
+        this.util = new Util(this.ctx)
+        this.util.seed("" + this.baseSeed)
+
+        // inherit scale and angle
+        this.widthScale = this.util.randInherit(this.widthScale, ref2.widthScale, 0.4, 0.2)
+        this.angleX = this.util.randInherit(this.angleX, ref2.angleX, 0.4, 0.2) 
+        this.angleY = this.util.randInherit(this.angleY, ref2.angleY, 0.4, 0.2)
+
+        this.updateScale(this.util.prop(100,360,this.util.seededRand()))
+
+        // hair Color conversion and inherit
+        var myRGB = this.hexToRgb(this.hairColor)
+        var yourRGB = this.hexToRgb(ref2.hairColor)
+
+        var p1Bias = this.util.randInherit(0, 1, 0.4, 0.2)
+        var newR = Math.floor(myRGB.r * p1Bias + yourRGB.r * (1-p1Bias))
+        var newG = Math.floor(myRGB.g * p1Bias + yourRGB.g * (1-p1Bias))
+        var newB = Math.floor(myRGB.b * p1Bias + yourRGB.b * (1-p1Bias))
+
+        this.hairColor = this.rgbToHex(newR, newG, newB)
+        
+        // face Color conversion and inherit
+        var myRGB = this.hexToRgb(this.faceColor)
+        var yourRGB = this.hexToRgb(ref2.faceColor)
+
+        var p1Bias = this.util.randInherit(0, 1, 0.4, 0.2)
+        var newR = Math.floor(myRGB.r * p1Bias + yourRGB.r * (1-p1Bias))
+        var newG = Math.floor(myRGB.g * p1Bias + yourRGB.g * (1-p1Bias))
+        var newB = Math.floor(myRGB.b * p1Bias + yourRGB.b * (1-p1Bias))
+
+        this.faceColor = this.rgbToHex(newR, newG, newB)
+
+        // inherit some facial features
+        this.eyeSeperation = this.util.randInherit(this.eyeSeperation, ref2.eyeSeperation, 0.4, 0.2)
+        this.eyeHeight = this.util.randInherit(this.eyeHeight, ref2.eyeHeight, 0.4, 0.2)
+        this.mouthHeight = this.util.randInherit(this.mouthHeight, ref2.mouthHeight, 0.4, 0.2)
+
+        // inherit random discrete features
+        this.mouthStyle = [this.mouthStyle, ref2.mouthStyle][Math.floor(this.util.seededRand() * 2)]
+        this.eyeStyle = [this.eyeStyle, ref2.eyeStyle][Math.floor(this.util.seededRand() * 2)]
+
+        this.accessories.push.apply(this.accessories, ref2.accessories)
+        let newAccessories = []
+        if(this.accessories.length > 0){
+            newAccessories.push(this.accessories[Math.floor(this.util.seededRand() * this.accessories.length)])
+        }
+        this.accessories = newAccessories
+
+        // inherit rest of the face features
+        this.eyeRand1 = this.util.randInherit(this.eyeRand1, ref2.eyeRand1, 0.4, 0.2)
+        this.eyeRand2 = this.util.randInherit(this.eyeRand2, ref2.eyeRand2, 0.4, 0.2)
+        this.eyeRand3 = this.util.randInherit(this.eyeRand3, ref2.eyeRand3, 0.4, 0.2)
+        this.eyeRand4 = this.util.randInherit(this.eyeRand4, ref2.eyeRand4, 0.4, 0.2)
+
+        this.mouthRand1 = this.util.randInherit(this.mouthRand1, ref2.mouthRand1, 0.4, 0.2)
+        this.mouthRand2 = this.util.randInherit(this.mouthRand2, ref2.mouthRand2, 0.4, 0.2)
+        this.mouthRand3 = this.util.randInherit(this.mouthRand3, ref2.mouthRand3, 0.4, 0.2)
+        this.mouthRand4 = this.util.randInherit(this.mouthRand4, ref2.mouthRand4, 0.4, 0.2)
+
+        this.accRand1 = this.util.randInherit(this.accRand1, ref2.accRand1, 0.4, 0.2)
+        this.accRand2 = this.util.randInherit(this.accRand2, ref2.accRand2, 0.4, 0.2)
+        this.accRand3 = this.util.randInherit(this.accRand3, ref2.accRand3, 0.4, 0.2)
+        this.accRand4 = this.util.randInherit(this.accRand4, ref2.accRand4, 0.4, 0.2)
+
+        this.hairlineHeight = this.util.randInherit(this.hairlineHeight, ref2.hairlineHeight, 0.4, 0.2)
+        this.hairLength = this.util.randInherit(this.hairLength, ref2.hairLength, 0.4, 0.2)
+
+        this.isStraightBang = this.util.randInherit(this.isStraightBang, ref2.isStraightBang, 0.4, 0.2)
+        this.topAnchorCount = this.util.randInherit(this.topAnchorCount, ref2.topAnchorCount, 0.4, 0.2)
+
+        this.faceVX = this.util.randInherit(this.faceVX, ref2.faceVX, 0.4, 0.2) //for shifting the face very slightly randomly
+        this.faceVY = this.util.randInherit(this.faceVY, ref2.faceVY, 0.4, 0.2)
+
+        this.headRoundedness = this.util.randInherit(this.headRoundedness, ref2.headRoundedness, 0.4, 0.2)//favor unround heads
+        this.cheekBulge = this.util.randInherit(this.cheekBulge, ref2.cheekBulge, 0.4, 0.2)
+        this.chinBulge = this.util.randInherit(this.chinBulge, ref2.chinBulge, 0.4, 0.2)
     }
 }
 

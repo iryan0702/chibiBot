@@ -28,6 +28,7 @@ class Ref{
         this.util = new Util(this.ctx)
         this.util.seed("" + this.baseSeed)
         this.widthScale = this.util.prop(0.8,1.75,this.util.seededRand())
+        this.lineWidth = Math.floor(this.util.prop(Math.floor(this.util.prop(10,26,this.util.seededRand())),26,this.util.seededRand()))
 
         this.angleX = Math.floor(this.util.prop(-20,20.9999,this.util.seededRand())) 
         this.angleY = Math.floor(this.util.prop(-25,-5.0001,this.util.seededRand())) 
@@ -194,6 +195,7 @@ class Ref{
 
         // inherit scale and angle
         this.widthScale = this.util.randInherit(this.widthScale, ref2.widthScale, 0.4, 0.2)
+        this.lineWidth = this.util.randInherit(this.lineWidth, ref2.lineWidth, 0.4, 0.2)
         this.angleX = this.util.randInherit(this.angleX, ref2.angleX, 0.4, 0.2) 
         this.angleY = this.util.randInherit(this.angleY, ref2.angleY, 0.4, 0.2)
 

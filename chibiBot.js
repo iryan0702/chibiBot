@@ -31,7 +31,7 @@ function create(ref, fileName, outputToMainDirectory = false, outputToFusionDire
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     
     //Brush style
-    brushWidth = 25;
+    brushWidth = ref.lineWidth;
     ctx.lineWidth = brushWidth;
     ctx.lineCap = 'round';
 
@@ -284,6 +284,7 @@ while(userInput != "exit" && userInput != "quit"){
             fs.unlinkSync(fileName);
             
             if(fusionsRemaining == 0){
+                lookingAroundAnimation(fuseChibis[fuse1])
                 break
             }
         }

@@ -537,8 +537,8 @@ class Generator{
                 facePaths.push(this.generateCircleP(ref.rightEye, ref.width/24))
                 break
             }case 1:{ //Smol Beanz
-                facePaths.push(this.generateDotP(ref.leftEye))
-                facePaths.push(this.generateDotP(ref.rightEye))
+                facePaths.push(this.generateCircleP(ref.leftEye, 0))
+                facePaths.push(this.generateCircleP(ref.rightEye, 0))
                 break
             }case 2:{ //Beeg Beanz
                 facePaths.push(this.generateOvalP(ref.leftEye, ref.height/12*1.3*util.propC(1.2,0.8,ref.eyeRand1), ref.height/6,0,"#222222", "#ffffff"))
